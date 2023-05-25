@@ -1,0 +1,66 @@
+.board {
+  display: block;
+  position: relative;
+  margin: 0 auto;
+}
+
+.board_editable {
+  cursor: pointer;
+}
+
+.board_moving {
+  cursor: grabbing;
+}
+
+.cell-live {
+  background: #ccc;
+  position: absolute;
+}
+
+.cell-dead {
+  background: #000;
+  position: absolute;
+}
+
+.controls_inputs {
+  width: 60%;
+  margin: 10px auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.controls_inputs__label {
+  justify-self: right;
+  padding-right: 5px;
+}
+/* .controls_inputs__input {
+  width: 100%;
+} */
+.controls_inputs__unit {
+  justify-self: left;
+  padding-left: 5px;
+}
+
+.controls_buttons {
+  width: fit-content;
+  margin: 10px auto;
+}
+
+.controls_game {
+  width: fit-content;
+  margin: 10px auto;
+}
+.controls_game__button {
+  font-size: 2em;
+}
+
+.info {
+  width: fit-content;
+  margin: 10px auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.info__label {
+  justify-self: right;
+  padding-right: 5px;
+}
