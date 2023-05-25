@@ -6,45 +6,19 @@ class GameOfLife {
     this.cols = cols;
     this.cellStatesBuffer = this.initCellStates();
     this.cellStates = this.initCellStates();
-
-    this.initAliveNeigbors();
-  }
-
-  initAliveNeigbors() {
-    this.aliveNeigbors = [];
-    for (let y = 0; y < this.rows; y++) {
-      this.aliveNeigbors[y] = [];
-      for (let x = 0; x < this.cols; x++) {
-        this.aliveNeigbors[y][x] = 0;
-      }
-    }
-  }
-
-  resetAliveNeigbors() {
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        this.aliveNeigbors[y][x] = 0;
-      }
-    }
+    this.aliveNeigbors = this.initAliveNeigbors();
   }
 
   initCellStates() {
-    let cellStates = [];
-    for (let y = 0; y < this.rows; y++) {
-      cellStates[y] = [];
-      for (let x = 0; x < this.cols; x++) {
-        cellStates[y][x] = false;
-      }
-    }
-    return cellStates;
+    return Array(this.cols * this.rows).fill(false);
   }
 
-  modifyCellStates(buffer, fn) {
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        buffer[y][x] = fn(x, y, buffer[y][x]);
-      }
-    }
+  initAliveNeigbors() {
+    return Array(this.cols * this.rows).fill(0);
+  }
+
+  resetAliveNeigbors() {
+    this.aliveNeigbors.fill(0);
   }
 
   swapBuffers() {
@@ -54,35 +28,36 @@ class GameOfLife {
   }
 
   clearBuffer() {
-    this.modifyCellStates(this.cellStatesBuffer, () => false);
+    this.cellStatesBuffer.fill(false);
   }
 
   random(threshold = DEFAULT_RANDOM_THRESHOLD) {
-    this.modifyCellStates(this.cellStates, () => Math.random() <= threshold);
+    for (let i = 0; i < this.rows * this.cols; i++) {
+      this.cellStates[i] = Math.random() <= threshold;
+    }
   }
 
   clear() {
-    this.modifyCellStates(this.cellStates, () => false);
+    this.cellStates.fill(false, 0, this.rows * this.cols);
   }
 
   swapCell(x, y) {
-    this.cellStates[y][x] = !this.cellStates[y][x];
+    const i = y * this.cols + x;
+    this.cellStates[i] = !this.cellStates[i];
   }
 
   get(x, y) {
-    return this.cellStates[y][x];
+    return this.cellStates[y * this.cols + x];
   }
 
   runIteration() {
     this.calcAliveNeighbors();
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        const neighbors = this.aliveNeigbors[y][x];
-        if (this.cellStates[y][x]) {
-          this.cellStatesBuffer[y][x] = neighbors === 2 || neighbors === 3;
-        } else {
-          this.cellStatesBuffer[y][x] = neighbors === 3;
-        }
+    for (let i = 0; i < this.rows * this.cols; i++) {
+      const neighbors = this.aliveNeigbors[i];
+      if (this.cellStates[i]) {
+        this.cellStatesBuffer[i] = neighbors === 2 || neighbors === 3;
+      } else {
+        this.cellStatesBuffer[i] = neighbors === 3;
       }
     }
 
@@ -103,16 +78,16 @@ class GameOfLife {
     };
 
     const calc = (x, y) => {
-      this.aliveNeigbors[y - 1][x - 1] += 1;
-      this.aliveNeigbors[y][x - 1] += 1;
-      this.aliveNeigbors[y + 1][x - 1] += 1;
+      this.aliveNeigbors[(y - 1) * this.cols + x - 1] += 1;
+      this.aliveNeigbors[(y - 1) * this.cols + x] += 1;
+      this.aliveNeigbors[(y - 1) * this.cols + x + 1] += 1;
 
-      this.aliveNeigbors[y - 1][x] += 1;
-      this.aliveNeigbors[y + 1][x] += 1;
+      this.aliveNeigbors[y * this.cols + x - 1] += 1;
+      this.aliveNeigbors[y * this.cols + x + 1] += 1;
 
-      this.aliveNeigbors[y - 1][x + 1] += 1;
-      this.aliveNeigbors[y][x + 1] += 1;
-      this.aliveNeigbors[y + 1][x + 1] += 1;
+      this.aliveNeigbors[(y + 1) * this.cols + x - 1] += 1;
+      this.aliveNeigbors[(y + 1) * this.cols + x] += 1;
+      this.aliveNeigbors[(y + 1) * this.cols + x + 1] += 1;
     };
 
     const calcClipped = (x, y) => {
@@ -120,23 +95,24 @@ class GameOfLife {
       const aX = clipX(x + 1);
       const sY = clipY(y - 1);
       const aY = clipY(y + 1);
-      this.aliveNeigbors[sY][sX] += 1;
-      this.aliveNeigbors[y][sX] += 1;
-      this.aliveNeigbors[aY][sX] += 1;
+      
+      this.aliveNeigbors[sY * this.cols + sX] += 1;
+      this.aliveNeigbors[sY * this.cols + x] += 1;
+      this.aliveNeigbors[sY * this.cols + aX] += 1;
 
-      this.aliveNeigbors[sY][x] += 1;
-      this.aliveNeigbors[aY][x] += 1;
+      this.aliveNeigbors[y * this.cols + sX] += 1;
+      this.aliveNeigbors[y * this.cols + aX] += 1;
 
-      this.aliveNeigbors[sY][aX] += 1;
-      this.aliveNeigbors[y][aX] += 1;
-      this.aliveNeigbors[aY][aX] += 1;
+      this.aliveNeigbors[aY * this.cols + sX] += 1;
+      this.aliveNeigbors[aY * this.cols + x] += 1;
+      this.aliveNeigbors[aY * this.cols + aX] += 1;
     };
 
     this.resetAliveNeigbors();
 
     for (let y = 1; y < this.rows - 1; y++) {
       for (let x = 1; x < this.cols - 1; x++) {
-        if (this.cellStates[y][x]) {
+        if (this.cellStates[y * this.cols + x]) {
           calc(x, y);
         }
       }
@@ -144,7 +120,7 @@ class GameOfLife {
 
     for (let y of [0, this.rows - 1]) {
       for (let x = 0; x < this.cols; x++) {
-        if (this.cellStates[y][x]) {
+        if (this.cellStates[y * this.cols + x]) {
           calcClipped(x, y);
         }
       }
@@ -152,7 +128,7 @@ class GameOfLife {
 
     for (let y = 1; y < this.rows - 1; y++) {
       for (let x of [0, this.cols - 1]) {
-        if (this.cellStates[y][x]) {
+        if (this.cellStates[y * this.cols + x]) {
           calcClipped(x, y);
         }
       }

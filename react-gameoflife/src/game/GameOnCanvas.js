@@ -13,8 +13,8 @@ const GameOnCanvas = ({
   height = HEIGHT,
   cellSize = CELL_SIZE,
 }) => {
-  const rows = height / cellSize;
-  const cols = width / cellSize;
+  const rows = Math.floor(height / cellSize);
+  const cols = Math.floor(width / cellSize);
   const gameState = useRef(new GameOfLife(rows, cols));
   const canvas = useRef(null);
   const image = useRef(new ImageData(width, height));
@@ -27,6 +27,7 @@ const GameOnCanvas = ({
   const viewPortCenterX = useRef(cols / 2);
   const viewPortCenterY = useRef(rows / 2);
   const viewPortZoomLevel = useRef(1);
+  const viewPortRatio = useRef(1 / cellSize);
   const [intervalRef, setInterval] = useRefState(100);
   const [isRunningRef, setRunning] = useRefState(false);
   const [randomLevel, setRandomLevel] = useState(0.3);
@@ -54,17 +55,13 @@ const GameOnCanvas = ({
   });
 
   const pixelToCell = (x, y) => {
-    const ratio = 1 / (cellSize * viewPortZoomLevel.current);
+    const gameX =
+      Math.floor((x - width / 2) * viewPortRatio.current + viewPortCenterX.current) % cols;
 
-    let gameX =
-      Math.floor((x - width / 2) * ratio + viewPortCenterX.current) % cols;
-    if (gameX < 0) gameX += cols;
+    const gameY =
+      Math.floor((y - height / 2) * viewPortRatio.current + viewPortCenterY.current) % rows;
 
-    let gameY =
-      Math.floor((y - height / 2) * ratio + viewPortCenterY.current) % rows;
-    if (gameY < 0) gameY += rows;
-
-    return [gameX, gameY];
+    return [(gameX + cols) % cols, (gameY + rows) % rows];
   };
 
   // cx and cy in screen coordinates
@@ -84,6 +81,7 @@ const GameOnCanvas = ({
       }
 
       viewPortZoomLevel.current = newZoomLevel;
+      viewPortRatio.current = 1 / (cellSize * viewPortZoomLevel.current);
 
       if (!isRunningRef.current) {
         drawPixels(context.current);
@@ -125,9 +123,12 @@ const GameOnCanvas = ({
   const drawOnImage = (ctx) => {
     for (let x = 0; x < width; ++x) {
       for (let y = 0; y < height; ++y) {
-        const [gameX, gameY] = pixelToCell(x, y);
+        const gameX =
+          Math.floor((x - width / 2) * viewPortRatio.current + viewPortCenterX.current) % cols;
+        const gameY =
+          Math.floor((y - height / 2) * viewPortRatio.current + viewPortCenterY.current) % rows;
         const offset = (y * width + x) * 4;
-        if (gameState.current.get(gameX, gameY)) {
+        if (gameState.current.get((gameX + cols) % cols, (gameY + rows) % rows)) {
           pixels[offset] = 200;
           pixels[offset + 1] = 200;
           pixels[offset + 2] = 200;
@@ -206,8 +207,8 @@ const GameOnCanvas = ({
         Math.floor(totalTime.current / interval) -
         Math.floor(prevTotalTime / interval);
 
-      if (newIterationsCount > 20) {
-        newIterationsCount = 20;
+      if (newIterationsCount > 100) {
+        newIterationsCount = 100;
       }
 
       for (let i = 0; i < newIterationsCount; ++i) {
@@ -216,11 +217,11 @@ const GameOnCanvas = ({
       }
 
       if (newIterationsCount > 0) {
-        console.log(
-          `elapsedTime = ${elapsedTime.toFixed(
-            0
-          )} newIterationsCount = ${newIterationsCount}`
-        );
+        // console.log(
+        //   `elapsedTime = ${elapsedTime.toFixed(
+        //     0
+        //   )} newIterationsCount = ${newIterationsCount}`
+        // );
         return true;
       }
     }
