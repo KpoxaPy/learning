@@ -1,10 +1,10 @@
 // import Game from "./game/Game";
-import GameOnCanvas from "./game/GameOnCanvas";
+import Game from "./game/Game";
 
 function App() {
   return (
     <div className="App">
-      <GameOnCanvas cellSize={4} />
+      <Game cellSize={4} />
     </div>
   );
 }
