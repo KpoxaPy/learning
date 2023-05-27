@@ -120,7 +120,7 @@ const GameOnCanvas = ({
     )}; ${viewPortCenterY.current.toFixed(2)})`;
   };
 
-  const drawOnImage = (ctx) => {
+  const drawPixels = (ctx) => {
     for (let x = 0; x < width; ++x) {
       for (let y = 0; y < height; ++y) {
         const gameX =
@@ -128,11 +128,12 @@ const GameOnCanvas = ({
         const gameY =
           Math.floor((y - height / 2) * viewPortRatio.current + viewPortCenterY.current) % rows;
         const offset = (y * width + x) * 4;
-        if (gameState.current.get((gameX + cols) % cols, (gameY + rows) % rows)) {
+        const state = gameState.current.get((gameX + cols) % cols, (gameY + rows) % rows);
+        if (state === 2) {
           pixels[offset] = 200;
           pixels[offset + 1] = 200;
           pixels[offset + 2] = 200;
-        } else {
+        } else if (state === 1) {
           pixels[offset] = 50;
           pixels[offset + 1] = 50;
           pixels[offset + 2] = 50;
@@ -142,45 +143,12 @@ const GameOnCanvas = ({
     ctx.putImageData(image.current, 0, 0);
   };
 
-  // const drawOnContext = (ctx) => {
-  //   ctx.fillStyle = "#000000";
-  //   ctx.fillRect(0, 0, width, height);
-  //   ctx.fillStyle = "#ffffff";
-  //   for (let x = 0; x < cols; ++x) {
-  //     for (let y = 0; y < rows; ++y) {
-  //       if (gameState.current.get(x, y)) {
-  //         if (cellSize >= 10) {
-  //           ctx.fillRect(
-  //             cellSize * x + 1,
-  //             cellSize * y + 1,
-  //             cellSize - 2,
-  //             cellSize - 2
-  //           );
-  //         } else {
-  //           ctx.fillRect(cellSize * x, cellSize * y, cellSize, cellSize);
-  //         }
-  //       }
-  //     }
-  //   }
-  // };
-
-  const drawPixels = (ctx) => {
-    drawOnImage(ctx);
-  };
-
   const runGame = () => {
     setRunning(true);
   };
 
   const stopGame = () => {
     setRunning(false);
-  };
-
-  const randomBoard = () => {
-    gameState.current.random(randomLevel);
-    if (!isRunningRef.current) {
-      drawPixels(context.current);
-    }
   };
 
   const changeIterationTime = (event) => {
@@ -217,11 +185,11 @@ const GameOnCanvas = ({
       }
 
       if (newIterationsCount > 0) {
-        // console.log(
-        //   `elapsedTime = ${elapsedTime.toFixed(
-        //     0
-        //   )} newIterationsCount = ${newIterationsCount}`
-        // );
+        console.log(
+          `elapsedTime = ${elapsedTime.toFixed(
+            0
+          )} newIterationsCount = ${newIterationsCount}`
+        );
         return true;
       }
     }
@@ -287,19 +255,22 @@ const GameOnCanvas = ({
     changeZoom(newZoomLevel, cx, cy);
   };
 
+  const randomBoard = () => {
+    gameState.current.random(randomLevel);
+    drawPixels(context.current);
+  };
+
+  const clearBoard = () => {
+    gameState.current.clear();
+    drawPixels(context.current);
+  };
+
   const resetCenter = () => {
     moveViewPort();
   };
 
   const resetZoom = () => {
     changeZoom(1);
-  };
-
-  const clearBoard = () => {
-    gameState.current.clear();
-    if (!isRunningRef.current) {
-      drawPixels(context.current);
-    }
   };
 
   useEffect(() => {
