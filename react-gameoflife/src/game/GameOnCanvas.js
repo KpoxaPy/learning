@@ -2,64 +2,46 @@ import { useState, useRef, useEffect } from "react";
 import "./Game.css";
 import GameOfLife from "./game_of_life";
 import useRefState from "../utils/useRefState";
-import Canvas from "../canvas/Canvas";
+import Canvas, { resizeCanvas } from "../canvas/Canvas";
 
 const CELL_SIZE = 20;
-const WIDTH = 800;
-const HEIGHT = 600;
 
 const GameOnCanvas = ({
-  width = WIDTH,
-  height = HEIGHT,
+  width: widthParam,
+  height: heightParam,
   cellSize = CELL_SIZE,
 }) => {
-  const rows = Math.floor(height / cellSize);
-  const cols = Math.floor(width / cellSize);
+  const rows = 100;
+  const cols = 100;
+
+  const [intervalRef, setInterval] = useRefState(100);
+  const [isRunningRef, setRunning] = useRefState(false);
+  const [randomLevel, setRandomLevel] = useState(0.3);
+  const [canvasAddClass, setCanvasAddClass] = useState("board_editable");
+
+  const s = useRef({}).current;
+
   const gameState = useRef(new GameOfLife(rows, cols));
   const canvas = useRef(null);
-  const image = useRef(new ImageData(width, height));
-  const pixels = image.current.data;
+  const image = useRef(null);
   const totalTime = useRef(0);
   const gameIteration = useRef(0);
   const isMouseDown = useRef(false);
   const mouseX = useRef(null);
   const mouseY = useRef(null);
-  const viewPortCenterX = useRef(cols / 2);
-  const viewPortCenterY = useRef(rows / 2);
+  const viewPortCenterX = useRef(0);
+  const viewPortCenterY = useRef(0);
   const viewPortZoomLevel = useRef(1);
-  const viewPortRatio = useRef(1 / cellSize);
-  const [intervalRef, setInterval] = useRefState(100);
-  const [isRunningRef, setRunning] = useRefState(false);
-  const [randomLevel, setRandomLevel] = useState(0.3);
-  const [canvasAddClass, setCanvasAddClass] = useState("board_editable");
-  const context = useRef(null);
   const infoZoomLevel = useRef(null);
   const infoVPCenter = useRef(null);
 
-  // prepate image data to be drawn
-  for (let x = 0; x < width; ++x) {
-    for (let y = 0; y < height; ++y) {
-      const offset = (y * width + x) * 4;
-      pixels[offset + 3] = 255;
-    }
-  }
-
-  useEffect(() => {
-    context.current = canvas.current.savedContext;
-    drawPixels(context.current);
-
-    infoZoomLevel.current.innerText = viewPortZoomLevel.current.toFixed(2);
-    infoVPCenter.current.innerText = `(${viewPortCenterX.current.toFixed(
-      2
-    )}; ${viewPortCenterY.current.toFixed(2)})`;
-  });
-
   const pixelToCell = (x, y) => {
+    const ratio = 1 / (cellSize * viewPortZoomLevel.current);
     const gameX =
-      Math.floor((x - width / 2) * viewPortRatio.current + viewPortCenterX.current) % cols;
+      Math.floor((x - s.width / 2) * ratio + viewPortCenterX.current) % cols;
 
     const gameY =
-      Math.floor((y - height / 2) * viewPortRatio.current + viewPortCenterY.current) % rows;
+      Math.floor((y - s.height / 2) * ratio + viewPortCenterY.current) % rows;
 
     return [(gameX + cols) % cols, (gameY + rows) % rows];
   };
@@ -71,26 +53,22 @@ const GameOnCanvas = ({
       if (cx !== null && cy !== null) {
         const shiftRatio = (1 / prevZoomLevel - 1 / newZoomLevel) / cellSize;
 
-        let gameX = viewPortCenterX.current + (cx - width / 2) * shiftRatio % cols;
+        let gameX = viewPortCenterX.current + (cx - s.width / 2) * shiftRatio % cols;
         if (gameX < 0) gameX += cols;
         viewPortCenterX.current = gameX;
 
-        let gameY = viewPortCenterY.current + (cy - height / 2) * shiftRatio % rows;
+        let gameY = viewPortCenterY.current + (cy - s.height / 2) * shiftRatio % rows;
         if (gameY < 0) gameY += rows;
         viewPortCenterY.current = gameY;
       }
 
       viewPortZoomLevel.current = newZoomLevel;
-      viewPortRatio.current = 1 / (cellSize * viewPortZoomLevel.current);
 
       if (!isRunningRef.current) {
-        drawPixels(context.current);
+        drawPixels(canvas.current.savedContext);
       }
 
-      infoZoomLevel.current.innerText = viewPortZoomLevel.current.toFixed(2);
-      infoVPCenter.current.innerText = `(${viewPortCenterX.current.toFixed(
-        2
-      )}; ${viewPortCenterY.current.toFixed(2)})`;
+      updateInfo();
     }
   };
 
@@ -112,23 +90,18 @@ const GameOnCanvas = ({
     }
 
     if (!isRunningRef.current) {
-      drawPixels(context.current);
+      drawPixels(canvas.current.savedContext);
     }
 
-    infoVPCenter.current.innerText = `(${viewPortCenterX.current.toFixed(
-      2
-    )}; ${viewPortCenterY.current.toFixed(2)})`;
+    updateInfo();
   };
 
   const drawPixels = (ctx) => {
-    for (let x = 0; x < width; ++x) {
-      for (let y = 0; y < height; ++y) {
-        const gameX =
-          Math.floor((x - width / 2) * viewPortRatio.current + viewPortCenterX.current) % cols;
-        const gameY =
-          Math.floor((y - height / 2) * viewPortRatio.current + viewPortCenterY.current) % rows;
-        const offset = (y * width + x) * 4;
-        const state = gameState.current.get((gameX + cols) % cols, (gameY + rows) % rows);
+    const pixels = image.current.data;
+    for (let x = 0; x < s.width; ++x) {
+      for (let y = 0; y < s.height; ++y) {
+        const offset = (y * s.width + x) * 4;
+        const state = gameState.current.get(...pixelToCell(x, y));
         if (state === 2) {
           pixels[offset] = 200;
           pixels[offset + 1] = 200;
@@ -138,6 +111,7 @@ const GameOnCanvas = ({
           pixels[offset + 1] = 50;
           pixels[offset + 2] = 50;
         }
+        pixels[offset + 3] = 255;
       }
     }
     ctx.putImageData(image.current, 0, 0);
@@ -185,11 +159,6 @@ const GameOnCanvas = ({
       }
 
       if (newIterationsCount > 0) {
-        console.log(
-          `elapsedTime = ${elapsedTime.toFixed(
-            0
-          )} newIterationsCount = ${newIterationsCount}`
-        );
         return true;
       }
     }
@@ -220,7 +189,7 @@ const GameOnCanvas = ({
     let dY = Math.abs(y - mouseY.current);
     if (dX < 10 && dY < 10) {
       gameState.current.swapCell(...pixelToCell(x, y));
-      drawPixels(context.current);
+      drawPixels(canvas.current.savedContext);
     }
 
     setCanvasAddClass("board_editable");
@@ -257,12 +226,12 @@ const GameOnCanvas = ({
 
   const randomBoard = () => {
     gameState.current.random(randomLevel);
-    drawPixels(context.current);
+    drawPixels(canvas.current.savedContext);
   };
 
   const clearBoard = () => {
     gameState.current.clear();
-    drawPixels(context.current);
+    drawPixels(canvas.current.savedContext);
   };
 
   const resetCenter = () => {
@@ -273,13 +242,40 @@ const GameOnCanvas = ({
     changeZoom(1);
   };
 
+  const updateInfo = () => {
+    infoZoomLevel.current.innerText = viewPortZoomLevel.current.toFixed(2);
+    infoVPCenter.current.innerText = `(${viewPortCenterX.current.toFixed(
+      2
+    )}; ${viewPortCenterY.current.toFixed(2)})`;
+  }
+
   useEffect(() => {
     const currentCanvas = canvas.current;
-    currentCanvas.addEventListener("wheel", canvasWheel, { passive: false });
+    s.width = currentCanvas.width;
+    s.height = currentCanvas.height;
+    image.current = new ImageData(s.width, s.height);
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.target === canvas.current) {
+          if (resizeCanvas(canvas.current)) {
+            drawPixels(canvas.current.savedContext);
+          }
+        }
+      }
+    });
+    resizeObserver.observe(currentCanvas);
+    
+    const params = ["wheel", canvasWheel, { passive: false }];
+    currentCanvas.addEventListener(...params);
+    
+    resizeCanvas(currentCanvas);
+    drawPixels(currentCanvas.savedContext);
+    updateInfo();
+
     return () => {
-      currentCanvas.removeEventListener("wheel", canvasWheel, {
-        passive: false,
-      });
+      resizeObserver.disconnect();
+      currentCanvas.removeEventListener(...params);
     };
   });
 
@@ -287,8 +283,8 @@ const GameOnCanvas = ({
     <div>
       <Canvas
         className={["board", canvasAddClass].join(" ")}
-        width={width}
-        height={height}
+        {...(widthParam ? `width=${widthParam}` : "")}
+        {...(heightParam ? `height=${heightParam}` : "")}
         draw={drawBoard}
         ref={canvas}
         onMouseDown={canvasMouseDown}
