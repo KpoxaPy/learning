@@ -1,8 +1,13 @@
 import React from "react";
 import useCanvas from "./useCanvas";
 
-function resizeCanvas(canvas) {
-  const { width, height } = canvas.getBoundingClientRect()
+function resizeCanvas(canvas, size) {
+  let width, height;
+  if (size) {
+    ({ width, height } = size);
+  } else {
+    ({ width, height } = canvas.getBoundingClientRect());
+  }
 
   if (canvas.width !== width || canvas.height !== height) {
     canvas.width = width;
