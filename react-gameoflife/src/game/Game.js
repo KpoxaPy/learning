@@ -258,17 +258,16 @@ const GameOnCanvas = ({
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         if (entry.target === canvas.current) {
-          if (resizeCanvas(canvas.current)) {
-            drawPixels(canvas.current.savedContext);
-          }
+          resizeCanvas(canvas.current);
+          drawPixels(canvas.current.savedContext);
         }
       }
     });
     resizeObserver.observe(currentCanvas);
-    
+
     const params = ["wheel", canvasWheel, { passive: false }];
     currentCanvas.addEventListener(...params);
-    
+
     resizeCanvas(currentCanvas);
     drawPixels(currentCanvas.savedContext);
     updateInfo();
