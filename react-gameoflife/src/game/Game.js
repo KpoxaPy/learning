@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import "./Game.css";
-import GameOfLife from "./game_of_life";
-import useRefState from "../utils/useRefState";
 import Canvas, { resizeCanvas } from "../canvas/Canvas";
+import useRefState from "../utils/useRefState";
+
+import "./Game.css";
+import GameOfLife, { DEFAULT_RANDOM_THRESHOLD } from "../game_of_life/game_of_life";
+import { Toroid2d } from "../game_of_life/topology";
 
 const CELL_SIZE = 20;
 
@@ -16,12 +18,12 @@ const GameOnCanvas = ({
 
   const [intervalRef, setInterval] = useRefState(100);
   const [isRunningRef, setRunning] = useRefState(false);
-  const [randomLevel, setRandomLevel] = useState(0.3);
+  const [randomLevel, setRandomLevel] = useState(DEFAULT_RANDOM_THRESHOLD);
   const [canvasAddClass, setCanvasAddClass] = useState("board_editable");
 
   const s = useRef({}).current;
 
-  const gameState = useRef(new GameOfLife(rows, cols));
+  const gameState = useRef(new GameOfLife(new Toroid2d(rows, cols)));
   const canvas = useRef(null);
   const image = useRef(null);
   const totalTime = useRef(0);
@@ -35,16 +37,20 @@ const GameOnCanvas = ({
   const infoZoomLevel = useRef(null);
   const infoVPCenter = useRef(null);
 
-  const pixelToCell = (x, y) => {
+  const getTransformPixelToCell = () => {
     const ratio = 1 / (cellSize * viewPortZoomLevel.current);
-    const gameX =
-      Math.floor((x - s.width / 2) * ratio + viewPortCenterX.current) % cols;
+    const shiftX = viewPortCenterX.current - s.width / 2 * ratio;
+    const shiftY = viewPortCenterY.current - s.height / 2 * ratio;
 
-    const gameY =
-      Math.floor((y - s.height / 2) * ratio + viewPortCenterY.current) % rows;
-
-    return [(gameX + cols) % cols, (gameY + rows) % rows];
+    return (x, y) => {
+      const gameX =
+        Math.floor(x * ratio + shiftX) % cols;
+      const gameY =
+        Math.floor(y * ratio + shiftY) % rows;
+      return [(gameX + cols) % cols, (gameY + rows) % rows];
+    }
   };
+
 
   // cx and cy in screen coordinates
   const changeZoom = (newZoomLevel, cx = null, cy = null) => {
@@ -98,15 +104,16 @@ const GameOnCanvas = ({
 
   const drawPixels = (ctx) => {
     const pixels = image.current.data;
+    const transform = getTransformPixelToCell();
     for (let x = 0; x < s.width; ++x) {
       for (let y = 0; y < s.height; ++y) {
         const offset = (y * s.width + x) * 4;
-        const state = gameState.current.get(...pixelToCell(x, y));
-        if (state === 2) {
+        const state = gameState.current.get(...transform(x, y));
+        if (state) {
           pixels[offset] = 200;
           pixels[offset + 1] = 200;
           pixels[offset + 2] = 200;
-        } else if (state === 1) {
+        } else {
           pixels[offset] = 50;
           pixels[offset + 1] = 50;
           pixels[offset + 2] = 50;
@@ -188,7 +195,7 @@ const GameOnCanvas = ({
     let dX = Math.abs(x - mouseX.current);
     let dY = Math.abs(y - mouseY.current);
     if (dX < 10 && dY < 10) {
-      gameState.current.swapCell(...pixelToCell(x, y));
+      gameState.current.swapCell(...getTransformPixelToCell()(x, y));
       drawPixels(canvas.current.savedContext);
     }
 

@@ -1,6 +1,4 @@
-const DEFAULT_RANDOM_THRESHOLD = 0.5;
-
-class GameOfLife {
+class GoL_Toroidal2d {
   constructor(rows, cols) {
     this.rows = rows;
     this.cols = cols;
@@ -20,7 +18,7 @@ class GameOfLife {
     this.cellStatesBuffer = tmp;
   }
 
-  random(threshold = DEFAULT_RANDOM_THRESHOLD) {
+  random(threshold) {
     for (let i = 0; i < this.rows * this.cols; i++) {
       this.cellStates[i] = Math.random() <= threshold;
     }
@@ -36,7 +34,7 @@ class GameOfLife {
   }
 
   get(x, y) {
-    return 1 + this.cellStates[y * this.cols + x];
+    return this.cellStates[y * this.cols + x];
   }
 
   runIteration() {
@@ -126,4 +124,4 @@ class GameOfLife {
   }
 }
 
-export default GameOfLife;
+export default GoL_Toroidal2d;
