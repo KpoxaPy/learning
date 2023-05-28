@@ -13,64 +13,59 @@ const GameOnCanvas = ({
   height: heightParam,
   cellSize = CELL_SIZE,
 }) => {
-  const rows = 100;
-  const cols = 100;
-
   const [intervalRef, setInterval] = useRefState(100);
   const [isRunningRef, setRunning] = useRefState(false);
   const [randomLevel, setRandomLevel] = useState(DEFAULT_RANDOM_THRESHOLD);
   const [canvasAddClass, setCanvasAddClass] = useState("board_editable");
 
   const s = useRef({
+    width: undefined,
+    height: undefined,
+
+    game: new GameOfLife(new Toroid2d(100, 100)),
+    image: null,
+    time: 0,
     redraw: false,
+
+    viewport: {
+      x: 0,
+      y: 0,
+      zoom: 1,
+    },
+
+    mouse: {
+      x: undefined,
+      y: undefined,
+      isDown: false,
+    },
   }).current;
 
-  const gameState = useRef(new GameOfLife(new Toroid2d(rows, cols)));
   const canvas = useRef(null);
-  const image = useRef(null);
-  const totalTime = useRef(0);
-  const gameIteration = useRef(0);
-  const isMouseDown = useRef(false);
-  const mouseX = useRef(null);
-  const mouseY = useRef(null);
-  const viewPortCenterX = useRef(0);
-  const viewPortCenterY = useRef(0);
-  const viewPortZoomLevel = useRef(1);
   const infoZoomLevel = useRef(null);
   const infoVPCenter = useRef(null);
 
   const getTransformPixelToCell = () => {
-    const ratio = 1 / (cellSize * viewPortZoomLevel.current);
-    const shiftX = viewPortCenterX.current - s.width / 2 * ratio;
-    const shiftY = viewPortCenterY.current - s.height / 2 * ratio;
+    const ratio = 1 / (cellSize * s.viewport.zoom);
+    const shiftX = s.viewport.x - s.width / 2 * ratio;
+    const shiftY = s.viewport.y - s.height / 2 * ratio;
 
     return (x, y) => {
-      const gameX =
-        Math.floor(x * ratio + shiftX) % cols;
-      const gameY =
-        Math.floor(y * ratio + shiftY) % rows;
-      return [(gameX + cols) % cols, (gameY + rows) % rows];
+      return [x * ratio + shiftX, y * ratio + shiftY];
     }
   };
 
-
   // cx and cy in screen coordinates
   const changeZoom = (newZoomLevel, cx = null, cy = null) => {
-    const prevZoomLevel = viewPortZoomLevel.current;
+    const prevZoomLevel = s.viewport.zoom;
     if (Math.abs(newZoomLevel - prevZoomLevel) > 0.001) {
       if (cx !== null && cy !== null) {
         const shiftRatio = (1 / prevZoomLevel - 1 / newZoomLevel) / cellSize;
 
-        let gameX = viewPortCenterX.current + (cx - s.width / 2) * shiftRatio % cols;
-        if (gameX < 0) gameX += cols;
-        viewPortCenterX.current = gameX;
-
-        let gameY = viewPortCenterY.current + (cy - s.height / 2) * shiftRatio % rows;
-        if (gameY < 0) gameY += rows;
-        viewPortCenterY.current = gameY;
+        s.viewport.x += (cx - s.width / 2) * shiftRatio;
+        s.viewport.y += (cy - s.height / 2) * shiftRatio;
       }
 
-      viewPortZoomLevel.current = newZoomLevel;
+      s.viewport.zoom = newZoomLevel;
 
       planRedraw();
       updateInfo();
@@ -79,19 +74,14 @@ const GameOnCanvas = ({
 
   // dx and dy in screen coordinates
   const moveViewPort = (dx = null, dy = null) => {
-    const ratio = 1 / (cellSize * viewPortZoomLevel.current);
+    const ratio = 1 / (cellSize * s.viewport.zoom);
 
     if (dx === null || dy === null) {
-      viewPortCenterX.current = cols / 2;
-      viewPortCenterY.current = rows / 2;
+      s.viewport.x = 0;
+      s.viewport.y = 0;
     } else {
-      let gameX = (viewPortCenterX.current + dx * ratio) % cols;
-      if (gameX < 0) gameX += cols;
-      viewPortCenterX.current = gameX;
-
-      let gameY = (viewPortCenterY.current + dy * ratio) % rows;
-      if (gameY < 0) gameY += rows;
-      viewPortCenterY.current = gameY;
+      s.viewport.x += dx * ratio;
+      s.viewport.y += dy * ratio;
     }
 
     planRedraw();
@@ -113,21 +103,20 @@ const GameOnCanvas = ({
     }
     intervalRef.current = value;
     setInterval(value);
-    totalTime.current = 0;
-    gameIteration.current = 0;
+    s.time = 0;
   };
 
   const runInterations = (elapsedTime) => {
     if (isRunningRef.current) {
-      const prevTotalTime = totalTime.current;
-      totalTime.current += elapsedTime;
+      const prevTotalTime = s.time;
+      s.time += elapsedTime;
       let interval = intervalRef.current;
       if (interval === 0) {
         interval = 10;
       }
 
       let newIterationsCount =
-        Math.floor(totalTime.current / interval) -
+        Math.floor(s.time / interval) -
         Math.floor(prevTotalTime / interval);
 
       if (newIterationsCount > 100) {
@@ -135,8 +124,7 @@ const GameOnCanvas = ({
       }
 
       for (let i = 0; i < newIterationsCount; ++i) {
-        ++gameIteration.current;
-        gameState.current.runIteration();
+        s.game.runIteration();
       }
 
       if (newIterationsCount > 0) {
@@ -147,12 +135,12 @@ const GameOnCanvas = ({
   };
 
   const drawPixels = (ctx) => {
-    const pixels = image.current.data;
+    const pixels = s.image.data;
     const transform = getTransformPixelToCell();
     for (let x = 0; x < s.width; ++x) {
       for (let y = 0; y < s.height; ++y) {
         const offset = (y * s.width + x) * 4;
-        const state = gameState.current.get(...transform(x, y));
+        const state = s.game.get(...transform(x, y));
         if (state) {
           pixels[offset] = 200;
           pixels[offset + 1] = 200;
@@ -165,7 +153,7 @@ const GameOnCanvas = ({
         pixels[offset + 3] = 255;
       }
     }
-    ctx.putImageData(image.current, 0, 0);
+    ctx.putImageData(s.image, 0, 0);
   };
 
   const planRedraw = () => {
@@ -185,28 +173,28 @@ const GameOnCanvas = ({
     let x = e.pageX - e.target.offsetLeft;
     let y = e.pageY - e.target.offsetTop;
 
-    isMouseDown.current = true;
-    mouseX.current = x;
-    mouseY.current = y;
+    s.mouse.isDown = true;
+    s.mouse.x = x;
+    s.mouse.y = y;
   };
 
   const canvasMouseUp = (e) => {
     if (e.button !== 0) return;
     let x = e.pageX - e.target.offsetLeft;
     let y = e.pageY - e.target.offsetTop;
-    let dX = Math.abs(x - mouseX.current);
-    let dY = Math.abs(y - mouseY.current);
+    let dX = Math.abs(x - s.mouse.x);
+    let dY = Math.abs(y - s.mouse.y);
     if (dX < 10 && dY < 10) {
-      gameState.current.swapCell(...getTransformPixelToCell()(x, y));
+      s.game.swapCell(...getTransformPixelToCell()(x, y));
       planRedraw();
     }
 
     setCanvasAddClass("board_editable");
-    isMouseDown.current = false;
+    s.mouse.isDown = false;
   };
 
   const canvasMouseMove = (e) => {
-    if (!isMouseDown.current) {
+    if (!s.mouse.isDown) {
       return;
     }
 
@@ -222,7 +210,7 @@ const GameOnCanvas = ({
     const delta = e.deltaY > 0 ? 0.952 : 1.05;
     const cx = e.pageX - e.target.offsetLeft;
     const cy = e.pageY - e.target.offsetTop;
-    let newZoomLevel = viewPortZoomLevel.current * delta;
+    let newZoomLevel = s.viewport.zoom * delta;
     if (newZoomLevel >= 32) {
       newZoomLevel = 32;
     } else if (newZoomLevel <= 0.05) {
@@ -234,12 +222,12 @@ const GameOnCanvas = ({
   };
 
   const randomBoard = () => {
-    gameState.current.random(randomLevel);
+    s.game.random(randomLevel);
     planRedraw();
   };
 
   const clearBoard = () => {
-    gameState.current.clear();
+    s.game.clear();
     planRedraw();
   };
 
@@ -252,10 +240,10 @@ const GameOnCanvas = ({
   };
 
   const updateInfo = () => {
-    infoZoomLevel.current.innerText = viewPortZoomLevel.current.toFixed(2);
-    infoVPCenter.current.innerText = `(${viewPortCenterX.current.toFixed(
+    infoZoomLevel.current.innerText = s.viewport.zoom.toFixed(2);
+    infoVPCenter.current.innerText = `(${s.viewport.x.toFixed(
       2
-    )}; ${viewPortCenterY.current.toFixed(2)})`;
+    )}; ${s.viewport.y.toFixed(2)})`;
   };
 
   const resize = (params = {}) => {
@@ -264,7 +252,7 @@ const GameOnCanvas = ({
     if (resizeCanvas(currentCanvas)) {
       s.width = currentCanvas.width;
       s.height = currentCanvas.height;
-      image.current = new ImageData(s.width, s.height);
+      s.image = new ImageData(s.width, s.height);
       if (immediate) {
         drawPixels(currentCanvas.savedContext);
       } else {

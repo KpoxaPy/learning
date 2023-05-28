@@ -24,11 +24,13 @@ class GameOfLife {
   }
 
   swapCell(x, y) {
-    this.impl.swapCell(...this.topology.transform(x, y));
+    let [tX, tY] = this.topology.transform(x, y);
+    this.impl.swapCell(Math.floor(tX), Math.floor(tY));
   }
 
   get(x, y) {
-    return this.impl.get(...this.topology.transform(x, y));
+    let [tX, tY] = this.topology.transform(x, y);
+    return this.impl.get(Math.floor(tX), Math.floor(tY));
   }
 
   runIteration() {
