@@ -21,7 +21,9 @@ const GameOnCanvas = ({
   const [randomLevel, setRandomLevel] = useState(DEFAULT_RANDOM_THRESHOLD);
   const [canvasAddClass, setCanvasAddClass] = useState("board_editable");
 
-  const s = useRef({}).current;
+  const s = useRef({
+    redraw: false,
+  }).current;
 
   const gameState = useRef(new GameOfLife(new Toroid2d(rows, cols)));
   const canvas = useRef(null);
@@ -70,10 +72,7 @@ const GameOnCanvas = ({
 
       viewPortZoomLevel.current = newZoomLevel;
 
-      if (!isRunningRef.current) {
-        drawPixels(canvas.current.savedContext);
-      }
-
+      planRedraw();
       updateInfo();
     }
   };
@@ -95,33 +94,8 @@ const GameOnCanvas = ({
       viewPortCenterY.current = gameY;
     }
 
-    if (!isRunningRef.current) {
-      drawPixels(canvas.current.savedContext);
-    }
-
+    planRedraw();
     updateInfo();
-  };
-
-  const drawPixels = (ctx) => {
-    const pixels = image.current.data;
-    const transform = getTransformPixelToCell();
-    for (let x = 0; x < s.width; ++x) {
-      for (let y = 0; y < s.height; ++y) {
-        const offset = (y * s.width + x) * 4;
-        const state = gameState.current.get(...transform(x, y));
-        if (state) {
-          pixels[offset] = 200;
-          pixels[offset + 1] = 200;
-          pixels[offset + 2] = 200;
-        } else {
-          pixels[offset] = 50;
-          pixels[offset + 1] = 50;
-          pixels[offset + 2] = 50;
-        }
-        pixels[offset + 3] = 255;
-      }
-    }
-    ctx.putImageData(image.current, 0, 0);
   };
 
   const runGame = () => {
@@ -172,8 +146,36 @@ const GameOnCanvas = ({
     return false;
   };
 
+  const drawPixels = (ctx) => {
+    const pixels = image.current.data;
+    const transform = getTransformPixelToCell();
+    for (let x = 0; x < s.width; ++x) {
+      for (let y = 0; y < s.height; ++y) {
+        const offset = (y * s.width + x) * 4;
+        const state = gameState.current.get(...transform(x, y));
+        if (state) {
+          pixels[offset] = 200;
+          pixels[offset + 1] = 200;
+          pixels[offset + 2] = 200;
+        } else {
+          pixels[offset] = 50;
+          pixels[offset + 1] = 50;
+          pixels[offset + 2] = 50;
+        }
+        pixels[offset + 3] = 255;
+      }
+    }
+    ctx.putImageData(image.current, 0, 0);
+  };
+
+  const planRedraw = () => {
+    s.redraw = true;
+  }
+
   const drawBoard = (ctx, { elapsedTime }) => {
-    if (runInterations(elapsedTime)) {
+    const doRun = runInterations(elapsedTime) || s.redraw;
+    s.redraw = false;
+    if (doRun) {
       drawPixels(ctx);
     }
   };
@@ -196,7 +198,7 @@ const GameOnCanvas = ({
     let dY = Math.abs(y - mouseY.current);
     if (dX < 10 && dY < 10) {
       gameState.current.swapCell(...getTransformPixelToCell()(x, y));
-      drawPixels(canvas.current.savedContext);
+      planRedraw();
     }
 
     setCanvasAddClass("board_editable");
@@ -233,12 +235,12 @@ const GameOnCanvas = ({
 
   const randomBoard = () => {
     gameState.current.random(randomLevel);
-    drawPixels(canvas.current.savedContext);
+    planRedraw();
   };
 
   const clearBoard = () => {
     gameState.current.clear();
-    drawPixels(canvas.current.savedContext);
+    planRedraw();
   };
 
   const resetCenter = () => {
@@ -254,19 +256,30 @@ const GameOnCanvas = ({
     infoVPCenter.current.innerText = `(${viewPortCenterX.current.toFixed(
       2
     )}; ${viewPortCenterY.current.toFixed(2)})`;
-  }
+  };
+
+  const resize = (params = {}) => {
+    const currentCanvas = canvas.current;
+    const { immediate : immediate = false} = params;
+    if (resizeCanvas(currentCanvas)) {
+      s.width = currentCanvas.width;
+      s.height = currentCanvas.height;
+      image.current = new ImageData(s.width, s.height);
+      if (immediate) {
+        drawPixels(currentCanvas.savedContext);
+      } else {
+        planRedraw();
+      }
+    }
+  };
 
   useEffect(() => {
     const currentCanvas = canvas.current;
-    s.width = currentCanvas.width;
-    s.height = currentCanvas.height;
-    image.current = new ImageData(s.width, s.height);
 
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        if (entry.target === canvas.current) {
-          resizeCanvas(canvas.current);
-          drawPixels(canvas.current.savedContext);
+        if (entry.target === currentCanvas) {
+          resize({ immediate: true });
         }
       }
     });
@@ -275,8 +288,7 @@ const GameOnCanvas = ({
     const params = ["wheel", canvasWheel, { passive: false }];
     currentCanvas.addEventListener(...params);
 
-    resizeCanvas(currentCanvas);
-    drawPixels(currentCanvas.savedContext);
+    resize();
     updateInfo();
 
     return () => {

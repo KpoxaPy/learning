@@ -9,13 +9,16 @@ function resizeCanvas(canvas, size) {
     ({ width, height } = canvas.getBoundingClientRect());
   }
 
+  width = Math.floor(width);
+  height = Math.floor(height);
+  
   if (canvas.width !== width || canvas.height !== height) {
     canvas.width = width;
     canvas.height = height;
-    return true
+    return true;
   }
 
-  return false
+  return false;
 }
 
 const Canvas = React.forwardRef((props, ref) => {
