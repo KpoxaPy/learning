@@ -260,7 +260,7 @@ const GameOnCanvas = ({
 
   const resize = (params = {}) => {
     const currentCanvas = canvas.current;
-    const { immediate : immediate = false} = params;
+    const { immediate = false} = params;
     if (resizeCanvas(currentCanvas)) {
       s.width = currentCanvas.width;
       s.height = currentCanvas.height;
