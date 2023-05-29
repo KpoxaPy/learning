@@ -29,6 +29,7 @@ const Canvas = React.forwardRef((props, ref) => {
 
   return <canvas ref={canvasRef} {...rest} />;
 });
+Canvas.displayName = "Canvas";
 
 export default Canvas;
 export { resizeCanvas };

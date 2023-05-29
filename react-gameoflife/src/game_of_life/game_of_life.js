@@ -11,7 +11,7 @@ class GameOfLife {
       const { width: cols, height: rows } = this.topology.boundRect;
       this.impl = new GoL_Toroidal2d(rows, cols);
     } else {
-      throw Error("not supported GoL topology");
+      throw Error(`not supported GoL topology: ${this.topology.name}`);
     }
   }
 
