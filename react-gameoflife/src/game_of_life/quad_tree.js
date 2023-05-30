@@ -158,12 +158,12 @@ class QuadTree {
   }
 
   get(x, y) {
-    // assuming we have field fox (x,y)
+    // assuming we have field for (x,y)
     return this.root.get(x, y);
   }
 
   set(x, y, value) {
-    // assuming we have field fox (x,y)
+    // assuming we have field for (x,y)
     this.root = this.root.set(x, y, value, this.memory);
   }
 
