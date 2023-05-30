@@ -104,11 +104,20 @@ class Node extends QuadTreeBaseNode {
   }
 
   get center() {
-    return this.m(this.ne.sw, this.se.nw, this.sw.ne, this.nw.se);
+    if (this.level > 2) {
+      return this.m(this.ne.sw, this.se.nw, this.sw.ne, this.nw.se);
+    }
+
+    return this.m.memory.leafFunctor(this.level - 1, [
+      ...this.ne.sw,
+      ...this.se.nw,
+      ...this.sw.ne,
+      ...this.nw.se
+    ]);
   }
 
   iterate(rules) {
-    if (this.level === 2) {
+    if (this.level <= 2) {
       return this.iterateSelf(rules);
     }
 
@@ -128,6 +137,19 @@ class Node extends QuadTreeBaseNode {
     const nwAux = this.m(nRes, cRes, wRes, nwRes);
 
     return this.m(neAux.center, seAux.center, swAux.center, nwAux.center);
+  }
+
+  iterateSelf(rules) {
+    const left = this.core / 2;
+    const right = this.width - left;
+    let result = this.m.memory.getEmpty(this.level - 1);
+    for (let x = left; x < right; ++x) {
+      for (let y = left; y < right; ++y) {
+        result = result.set(x - left, y - left,
+          rules.iterate(this.get(x, y), (dx, dy) => this.get(x + dx, y + dy)));
+      }
+    }
+    return result;
   }
 }
 
