@@ -12,9 +12,11 @@ class GoL_Toroidal2d {
   }
 
   random(threshold) {
-    // for (let i = 0; i < this.rows * this.cols; i++) {
-    //   this.cellStates[i] = Math.random() <= threshold;
-    // }
+    for (let x = 0; x < this.cols; ++x) {
+      for (let y = 0; y < this.rows; ++y) {
+        this.field.set(x, y, Math.random() <= threshold ? 1 : 0);
+      }
+    }
   }
 
   clear() {

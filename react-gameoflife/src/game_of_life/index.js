@@ -13,5 +13,6 @@ GameOfLife.Rules = {
   Classic: GoL_Rules
 };
 
+GameOfLife.DEFAULT_RANDOM_THRESHOLD = DEFAULT_RANDOM_THRESHOLD
+
 export default GameOfLife;
-export { DEFAULT_RANDOM_THRESHOLD };
