@@ -4,17 +4,55 @@ const SW = "sw";
 const NW = "nw";
 const DIVISION = [NE, SE, SW, NW];
 
-class Node {
-  constructor(level, ne, se, sw, nw) {
-    this.__id = undefined;
-    this.__hash = undefined;
+class QuadTreeBaseNode {
+  constructor(level) {
     this.level = level;
     this.width = Math.pow(2, this.level);
     this.core = this.width / 2;
+    this.__id = undefined;
+    this.__hash = undefined;
+    this.__isEmpty = false;
+  }
+
+  calcHash() {
+    throw Error("BaseNode class should not be used in QuadTree as is");
+  }
+
+  get id() {
+    return this.__id;
+  }
+
+  set id(id) {
+    this.__id = id;
+  }
+
+  get hash() {
+    if (!this.__hash) {
+      this.__hash = this.calcHash();
+    }
+    return this.__hash;
+  }
+
+  get isEmpty() {
+    return this.__isEmpty;
+  }
+
+  set isEmpty(flag) {
+    this.__isEmpty = flag;
+  }
+}
+
+class Node extends QuadTreeBaseNode {
+  constructor(level, ne, se, sw, nw) {
+    super(level);
     this.ne = ne;
     this.se = se;
     this.sw = sw;
     this.nw = nw;
+  }
+
+  calcHash() {
+    return `{${this.ne.id},${this.se.id},${this.sw.id},${this.nw.id}}`;
   }
 
   getSubNode(x, y) {
@@ -63,30 +101,16 @@ class Node {
   iterate(memory, rules) {
     return this;
   }
-
-  get id() {
-    return this.__id;
-  }
-
-  set id(id) {
-    this.__id = id;
-  }
-
-  get hash() {
-    if (!this.__hash) {
-      this.__hash = `{${this.ne.id},${this.se.id},${this.sw.id},${this.nw.id}}`;
-    }
-    return this.__hash;
-  }
 };
 
-class Leaf {
+class Leaf extends QuadTreeBaseNode {
   constructor(level, data) {
-    this.__id = undefined;
-    this.__hash = undefined;
-    this.level = level;
-    this.width = Math.pow(2, this.level);
+    super(level)
     this.data = data;
+  }
+
+  calcHash() {
+    return `<${this.data.join(',')}>`;
   }
 
   get(x, y) {
@@ -103,21 +127,6 @@ class Leaf {
     const newData = [...this.data];
     newData[y * this.width + x] = 1 - newData[y * this.width + x];
     return m(new Leaf(this.level, newData));
-  }
-
-  get id() {
-    return this.__id;
-  }
-
-  set id(id) {
-    this.__id = id;
-  }
-
-  get hash() {
-    if (!this.__hash) {
-      this.__hash = `<${this.data.join(',')}>`;
-    }
-    return this.__hash;
   }
 };
 
@@ -155,6 +164,7 @@ class QuadTreeMemory {
       // base empty leaf
       if (i === 0) {
         this.empty.set(level, node);
+        node.isEmpty = true;
       }
     }
   }
