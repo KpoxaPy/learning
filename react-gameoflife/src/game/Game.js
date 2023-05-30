@@ -95,6 +95,11 @@ const GameOnCanvas = ({
     setRunning(true);
   };
 
+  const stepGame = () => {
+    s.game.runIteration();
+    planRedraw();
+  };
+
   const stopGame = () => {
     setRunning(false);
   };
@@ -309,7 +314,10 @@ const GameOnCanvas = ({
           <button className="controls_game__button" onClick={runGame}>
             Run
           </button>
-        )}
+        )}{" "}
+        <button className="controls_game__button" onClick={stepGame}>
+          Step
+        </button>
       </div>
       <div className="controls_inputs">
         <div className="controls_inputs__label">Update every</div>
