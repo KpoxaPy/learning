@@ -3,8 +3,7 @@ import Canvas, { resizeCanvas } from "../canvas/Canvas";
 import useRefState from "../utils/useRefState";
 
 import "./Game.css";
-import GameOfLife, { DEFAULT_RANDOM_THRESHOLD } from "../game_of_life/game_of_life";
-import { Toroid2d } from "../game_of_life/topology";
+import GameOfLife from "../game_of_life";
 
 const CELL_SIZE = 20;
 
@@ -15,7 +14,7 @@ const GameOnCanvas = ({
 }) => {
   const [intervalRef, setInterval] = useRefState(100);
   const [isRunningRef, setRunning] = useRefState(false);
-  const [randomLevel, setRandomLevel] = useState(DEFAULT_RANDOM_THRESHOLD);
+  const [randomLevel, setRandomLevel] = useState(GameOfLife.DEFAULT_RANDOM_THRESHOLD);
   const [canvasAddClass, setCanvasAddClass] = useState("board_editable");
 
   const mainStateRef = useRef(undefined);
@@ -23,18 +22,18 @@ const GameOnCanvas = ({
     mainStateRef.current = {
       width: undefined,
       height: undefined,
-  
-      game: new GameOfLife(new Toroid2d(100, 100)),
+
+      game: new GameOfLife(new GameOfLife.Topology.Toroid2d(100, 100), new GameOfLife.Rules.Classic()),
       image: undefined,
       time: 0,
       redraw: false,
-  
+
       viewport: {
         x: 0,
         y: 0,
         zoom: 1,
       },
-  
+
       mouse: {
         x: undefined,
         y: undefined,
@@ -252,7 +251,7 @@ const GameOnCanvas = ({
 
   const resize = (params = {}) => {
     const currentCanvas = canvas.current;
-    const { immediate = false} = params;
+    const { immediate = false } = params;
     if (resizeCanvas(currentCanvas)) {
       s.width = currentCanvas.width;
       s.height = currentCanvas.height;

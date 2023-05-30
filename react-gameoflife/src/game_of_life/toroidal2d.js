@@ -30,7 +30,8 @@ class GoL_Toroidal2d {
     return this.field.get(x, y);
   }
 
-  runIteration() {
+  runIteration(rules) {
+    this.field.iterate(rules);
     // this.calcAliveNeighbors();
     // for (let i = 0; i < this.rows * this.cols; i++) {
     //   const neighbors = this.aliveNeigbors[i];

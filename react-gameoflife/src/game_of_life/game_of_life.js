@@ -3,8 +3,9 @@ import GoL_Toroidal2d from "./toroidal2d";
 const DEFAULT_RANDOM_THRESHOLD = 0.33;
 
 class GameOfLife {
-  constructor(topology) {
+  constructor(topology, rules) {
     this.topology = topology;
+    this.rules = rules;
     this.impl = null;
 
     if (this.topology.name === "toroid2d") {
@@ -34,7 +35,7 @@ class GameOfLife {
   }
 
   runIteration() {
-    this.impl.runIteration();
+    this.impl.runIteration(this.rules);
   }
 }
 

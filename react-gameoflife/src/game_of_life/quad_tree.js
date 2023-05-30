@@ -60,6 +60,10 @@ class Node {
     return memory.append(new Node(this.level, ...arr));
   }
 
+  iterate(memory, rules) {
+    return this;
+  }
+
   get id() {
     return this.__id;
   }
@@ -218,6 +222,10 @@ class QuadTree {
     emptyNode = this.memory.append(emptyNode);
     this.memory.empty.set(level, emptyNode);
     return emptyNode;
+  }
+
+  iterate(rules) {
+    return this.root.iterate(this.memory, rules);
   }
 };
 
