@@ -6,7 +6,7 @@ class GoL_Toroidal2d {
     this.cols = cols;
 
     this.memory = new QuadTree.Memory();
-    this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory);
+    this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory, true);
     console.log(this.field);
   }
 
@@ -19,7 +19,7 @@ class GoL_Toroidal2d {
   }
 
   clear() {
-    this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory);
+    this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory, true);
     console.log(this.field);
   }
 

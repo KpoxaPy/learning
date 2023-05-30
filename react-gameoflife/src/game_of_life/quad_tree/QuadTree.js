@@ -3,7 +3,7 @@ import QuadTreeMemory from "./QuadTreeMemory";
 class QuadTree {
   static MINIMUM_LEVEL = 1;
 
-  constructor(targetWidth, memory) {
+  constructor(targetWidth, memory, isToroidal = false) {
     this.root = undefined;
     if (memory) {
       this.memory = memory;
@@ -17,6 +17,8 @@ class QuadTree {
     targetWidth = targetWidth ?? minimumWidth;
     targetWidth = targetWidth >= minimumWidth ? targetWidth : minimumWidth;
     this.expandToWidth(targetWidth);
+
+    this.isToroidal = isToroidal;
   }
 
   get(x, y) {
@@ -52,7 +54,10 @@ class QuadTree {
   }
 
   iterate(rules) {
-    return this.root.iterate(this.memory, rules);
+    const double = this.isToroidal ?
+      this.root.toroidalDouble() :
+      this.root.double();
+    this.root = double.iterate(rules);
   }
 }
 

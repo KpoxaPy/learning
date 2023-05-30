@@ -82,7 +82,12 @@ class Node extends QuadTreeBaseNode {
       this.m(empty, this.nw, empty, empty))
   }
 
-  iterate(memory, rules) {
+  toroidalDouble() {
+    const sub = this.m(this.sw, this.nw, this.ne, this.se);
+    return this.m(sub, sub, sub, sub);
+  }
+
+  iterate(rules) {
     return this;
   }
 }
