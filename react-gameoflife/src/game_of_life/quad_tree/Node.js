@@ -74,13 +74,16 @@ class Node extends QuadTreeBaseNode {
     return this.m(...arr);
   }
 
-  iterate(memory, rules) {
-    return this;
+  double() {
+    const empty = this.m.memory.getEmpty(this.level - 1);
+    return this.m(this.m(empty, empty, this.ne, empty),
+      this.m(empty, empty, empty, this.se),
+      this.m(this.sw, empty, empty, empty),
+      this.m(empty, this.nw, empty, empty))
   }
 
-  // m = (...args) => { return memory.append(new Node(m, ...args));} 
-  getDoubleNode(m) {
-
+  iterate(memory, rules) {
+    return this;
   }
 }
 

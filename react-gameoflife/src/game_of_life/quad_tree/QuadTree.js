@@ -1,4 +1,3 @@
-import Node from "./Node";
 import QuadTreeMemory from "./QuadTreeMemory";
 
 class QuadTree {
@@ -11,9 +10,7 @@ class QuadTree {
     } else {
       this.memory = new QuadTreeMemory();
     }
-    this.m = (...args) => {
-      return memory.append(new Node(this.m, ...args));
-    }
+    this.m = this.memory.nodeFunctor;
     this.memory.canonizeLeafs(QuadTree.MINIMUM_LEVEL);
 
     const minimumWidth = Math.pow(2, QuadTree.MINIMUM_LEVEL);
@@ -50,21 +47,8 @@ class QuadTree {
     if (!this.root) {
       this.root = this.memory.empty.get(QuadTree.MINIMUM_LEVEL);
     } else {
-      const emptyNode = this.getEmptyNode(this.root.level);
-      this.root = this.m(emptyNode, this.root, emptyNode, emptyNode);
+      this.root = this.root.double();
     }
-  }
-
-  getEmptyNode(level) {
-    if (this.memory.empty.has(level)) {
-      return this.memory.empty.get(level);
-    }
-
-    const prevEmptyNode = this.getEmptyNode(level - 1);
-    const emptyNode = this.m(prevEmptyNode, prevEmptyNode, prevEmptyNode, prevEmptyNode);
-    emptyNode.isEmpty = true;
-    this.memory.empty.set(level, emptyNode);
-    return emptyNode;
   }
 
   iterate(rules) {

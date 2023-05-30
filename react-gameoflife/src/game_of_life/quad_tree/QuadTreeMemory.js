@@ -1,10 +1,21 @@
 import Leaf from "./Leaf";
+import Node from "./Node";
 
 class QuadTreeMemory {
   constructor() {
     this.empty = new Map();
     this.index = new Map();
     this.table = new Map();
+    
+    this.nodeFunctor = (...args) => {
+      return this.append(new Node(this.nodeFunctor, ...args));
+    }
+    this.nodeFunctor.memory = this;
+    
+    this.leafFunctor = (...args) => {
+      return this.append(new Leaf(this.leafFunctor, ...args));
+    }
+    this.leafFunctor.memory = this;
   }
 
   append(node) {
@@ -21,9 +32,6 @@ class QuadTreeMemory {
     const base = 2;
     const area = Math.pow(Math.pow(2, level), 2);
     const volume = Math.pow(base, area);
-    const m = (...args) => {
-      return this.append(new Leaf(m, ...args));
-    }
     for (let i = 0; i < volume; ++i) {
       let arr = Array(area).fill(0);
       let j = i;
@@ -32,7 +40,7 @@ class QuadTreeMemory {
         j >>= 1;
       }
 
-      const node = m(level, arr);
+      const node = this.leafFunctor(level, arr);
 
       // base empty leaf
       if (i === 0) {
@@ -40,6 +48,18 @@ class QuadTreeMemory {
         node.isEmpty = true;
       }
     }
+  }  
+
+  getEmpty(level) {
+    if (this.empty.has(level)) {
+      return this.empty.get(level);
+    }
+
+    const subNode = this.getEmpty(level - 1);
+    const emptyNode = this.nodeFunctor(subNode, subNode, subNode, subNode);
+    emptyNode.isEmpty = true;
+    this.empty.set(level, emptyNode);
+    return emptyNode;
   }
 }
 
