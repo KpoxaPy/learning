@@ -28,7 +28,7 @@ class Leaf extends QuadTreeBaseNode {
     return this.m(this.level, newData);
   }
 
-  ne() {
+  get ne() {
     let arr = new Array(this.core * this.core);
     for (let x = 0; x < this.core; ++x) {
       for (let y = 0; y < this.core; ++y) {
@@ -38,7 +38,7 @@ class Leaf extends QuadTreeBaseNode {
     return arr;
   }
 
-  se() {
+  get se() {
     let arr = new Array(this.core * this.core);
     for (let x = 0; x < this.core; ++x) {
       for (let y = 0; y < this.core; ++y) {
@@ -48,7 +48,7 @@ class Leaf extends QuadTreeBaseNode {
     return arr;
   }
 
-  sw() {
+  get sw() {
     let arr = new Array(this.core * this.core);
     for (let x = 0; x < this.core; ++x) {
       for (let y = 0; y < this.core; ++y) {
@@ -58,7 +58,7 @@ class Leaf extends QuadTreeBaseNode {
     return arr;
   }
 
-  nw() {
+  get nw() {
     let arr = new Array(this.core * this.core);
     for (let x = 0; x < this.core; ++x) {
       for (let y = 0; y < this.core; ++y) {
@@ -68,13 +68,13 @@ class Leaf extends QuadTreeBaseNode {
     return arr;
   }
 
-  double() {
+  get double() {
     const empty = new Array(Math.pow(2, this.level - 1)).fill(0);
     return this.m.memory.nodeFunctor(
-      this.m(this.level, [...empty, ...empty, ...this.ne(), ...empty]),
-      this.m(this.level, [...empty, ...empty, ...empty, ...this.se()]),
-      this.m(this.level, [...this.sw(), ...empty, ...empty, ...empty]),
-      this.m(this.level, [...empty, ...this.nw(), ...empty, ...empty]));
+      this.m(this.level, [...empty, ...empty, ...this.ne, ...empty]),
+      this.m(this.level, [...empty, ...empty, ...empty, ...this.se]),
+      this.m(this.level, [...this.sw, ...empty, ...empty, ...empty]),
+      this.m(this.level, [...empty, ...this.nw, ...empty, ...empty]));
   }
 }
 

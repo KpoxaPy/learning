@@ -49,14 +49,14 @@ class QuadTree {
     if (!this.root) {
       this.root = this.memory.empty.get(QuadTree.MINIMUM_LEVEL);
     } else {
-      this.root = this.root.double();
+      this.root = this.root.double;
     }
   }
 
   iterate(rules) {
     const double = this.isToroidal ?
-      this.root.toroidalDouble() :
-      this.root.double();
+      this.root.toroidalDouble :
+      this.root.double;
     this.root = double.iterate(rules);
   }
 }
