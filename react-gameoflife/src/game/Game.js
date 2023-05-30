@@ -23,7 +23,7 @@ const GameOnCanvas = ({
       width: undefined,
       height: undefined,
 
-      game: new GameOfLife(new GameOfLife.Topology.Toroid2d(100, 100), new GameOfLife.Rules.Classic()),
+      game: new GameOfLife(new GameOfLife.Topology.Toroid2d(128, 128), new GameOfLife.Rules.Classic()),
       image: undefined,
       time: 0,
       redraw: false,
