@@ -232,7 +232,8 @@ class QuadTree {
 
     const prevEmptyNode = this.getEmptyNode(level - 1);
     let emptyNode = new Node(level, prevEmptyNode, prevEmptyNode, prevEmptyNode, prevEmptyNode);
-    emptyNode = this.m(emptyNode);
+    emptyNode = this.m(emptyNode);    
+    emptyNode.isEmpty = true;
     this.memory.empty.set(level, emptyNode);
     return emptyNode;
   }
