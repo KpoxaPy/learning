@@ -8,8 +8,19 @@ const NW = "nw";
 const DIVISION = [NE, SE, SW, NW];
 
 class Node extends QuadTreeBaseNode {
-  constructor(level, ne, se, sw, nw) {
-    super(level);
+  constructor(m, ne, se, sw, nw) {
+    const level = ne.level;
+    if (!Number.isSafeInteger(level)) {
+      throw Error("Node should be made of valid subnodes");
+    }
+    if (level !== se.level || level !== sw.level || level !== nw.level) {
+      throw Error("Node should be made of same level subnodes");
+    }
+
+    super(level + 1);
+
+    this.m = m;
+
     this.ne = ne;
     this.se = se;
     this.sw = sw;
@@ -41,30 +52,35 @@ class Node extends QuadTreeBaseNode {
     return this[subNodeId].get(x, y);
   }
 
-  set(x, y, value, m) {
+  set(x, y, value) {
     const arr = DIVISION.map(x => this[x]);
     const id = DIVISION.indexOf(this.getSubNode(x, y));
 
     x %= this.core;
     y %= this.core;
-    arr[id] = arr[id].set(x, y, value, m);
+    arr[id] = arr[id].set(x, y, value);
 
-    return m(new Node(this.level, ...arr));
+    return this.m(...arr);
   }
 
-  swap(x, y, m) {
+  swap(x, y) {
     const arr = DIVISION.map(x => this[x]);
     const id = DIVISION.indexOf(this.getSubNode(x, y));
 
     x %= this.core;
     y %= this.core;
-    arr[id] = arr[id].swap(x, y, m);
+    arr[id] = arr[id].swap(x, y);
 
-    return m(new Node(this.level, ...arr));
+    return this.m(...arr);
   }
 
   iterate(memory, rules) {
     return this;
+  }
+
+  // m = (...args) => { return memory.append(new Node(m, ...args));} 
+  getDoubleNode(m) {
+
   }
 }
 

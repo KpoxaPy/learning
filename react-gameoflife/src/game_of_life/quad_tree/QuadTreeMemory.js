@@ -21,6 +21,9 @@ class QuadTreeMemory {
     const base = 2;
     const area = Math.pow(Math.pow(2, level), 2);
     const volume = Math.pow(base, area);
+    const m = (...args) => {
+      return this.append(new Leaf(m, ...args));
+    }
     for (let i = 0; i < volume; ++i) {
       let arr = Array(area).fill(0);
       let j = i;
@@ -29,7 +32,7 @@ class QuadTreeMemory {
         j >>= 1;
       }
 
-      const node = this.append(new Leaf(level, arr));
+      const node = m(level, arr);
 
       // base empty leaf
       if (i === 0) {
