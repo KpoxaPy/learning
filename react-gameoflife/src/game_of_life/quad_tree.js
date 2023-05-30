@@ -38,26 +38,26 @@ class Node {
     return this[subNodeId].get(x, y);
   }
 
-  set(x, y, value, memory) {
+  set(x, y, value, m) {
     const arr = DIVISION.map(x => this[x]);
     const id = DIVISION.indexOf(this.getSubNode(x, y));
 
     x %= this.core;
     y %= this.core;
-    arr[id] = arr[id].set(x, y, value, memory);
+    arr[id] = arr[id].set(x, y, value, m);
     
-    return memory.append(new Node(this.level, ...arr));
+    return m(new Node(this.level, ...arr));
   }
 
-  swap(x, y, memory) {
+  swap(x, y, m) {
     const arr = DIVISION.map(x => this[x]);
     const id = DIVISION.indexOf(this.getSubNode(x, y));
 
     x %= this.core;
     y %= this.core;
-    arr[id] = arr[id].swap(x, y, memory);
+    arr[id] = arr[id].swap(x, y, m);
     
-    return memory.append(new Node(this.level, ...arr));
+    return m(new Node(this.level, ...arr));
   }
 
   iterate(memory, rules) {
@@ -93,16 +93,16 @@ class Leaf {
     return this.data[y * this.width + x];
   }
 
-  set(x, y, value, memory) {
+  set(x, y, value, m) {
     const newData = [...this.data];
     newData[y * this.width + x] = value;
-    return memory.append(new Leaf(this.level, newData));
+    return m(new Leaf(this.level, newData));
   }
 
-  swap(x, y, memory) {
+  swap(x, y, m) {
     const newData = [...this.data];
     newData[y * this.width + x] = 1 - newData[y * this.width + x];
-    return memory.append(new Leaf(this.level, newData));
+    return m(new Leaf(this.level, newData));
   }
 
   get id() {
@@ -170,6 +170,9 @@ class QuadTree {
     } else {
       this.memory = new QuadTreeMemory();
     }
+    this.m = (n) => {
+      return this.memory.append(n);
+    }
     this.memory.canonizeLeafs(QuadTree.MINIMUM_LEVEL);
 
     const minimumWidth = Math.pow(2, QuadTree.MINIMUM_LEVEL);
@@ -185,12 +188,12 @@ class QuadTree {
 
   set(x, y, value) {
     // assuming we have field for (x,y)
-    this.root = this.root.set(x, y, value, this.memory);
+    this.root = this.root.set(x, y, value, this.m);
   }
 
   swap(x, y) {
     // assuming we have field for (x,y)
-    this.root = this.root.swap(x, y, this.memory);
+    this.root = this.root.swap(x, y, this.m);
   }
 
   expandToWidth(width) {
@@ -208,7 +211,7 @@ class QuadTree {
     } else {
       const emptyNode = this.getEmptyNode(this.root.level);
       const newNode = new Node(this.root.level + 1, emptyNode, this.root, emptyNode, emptyNode);
-      this.root = this.memory.append(newNode);
+      this.root = this.m(newNode);
     }
   }
 
@@ -219,7 +222,7 @@ class QuadTree {
 
     const prevEmptyNode = this.getEmptyNode(level - 1);
     let emptyNode = new Node(level, prevEmptyNode, prevEmptyNode, prevEmptyNode, prevEmptyNode);
-    emptyNode = this.memory.append(emptyNode);
+    emptyNode = this.m(emptyNode);
     this.memory.empty.set(level, emptyNode);
     return emptyNode;
   }
