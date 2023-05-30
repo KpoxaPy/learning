@@ -1,4 +1,5 @@
-import QuadTree, { QuadTreeMemory } from "./quad_tree";
+import QuadTree from "./quad_tree";
+import { QuadTreeMemory } from "./quad_tree";
 
 class GoL_Toroidal2d {
   constructor(rows, cols) {
