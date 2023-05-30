@@ -16,6 +16,7 @@ class GoL_Toroidal2d {
         this.field.set(x, y, Math.random() <= threshold ? 1 : 0);
       }
     }
+    console.log(this.field);
   }
 
   clear() {
@@ -34,6 +35,7 @@ class GoL_Toroidal2d {
 
   runIteration(rules) {
     this.field.iterate(rules);
+    console.log(this.field);
   }
 }
 
