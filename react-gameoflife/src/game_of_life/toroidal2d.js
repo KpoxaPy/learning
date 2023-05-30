@@ -1,12 +1,11 @@
 import QuadTree from "./quad_tree";
-import { QuadTreeMemory } from "./quad_tree";
 
 class GoL_Toroidal2d {
   constructor(rows, cols) {
     this.rows = rows;
     this.cols = cols;
 
-    this.memory = new QuadTreeMemory();
+    this.memory = new QuadTree.Memory();
     this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory);
     console.log(this.field);
   }
