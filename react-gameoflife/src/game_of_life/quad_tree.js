@@ -49,6 +49,17 @@ class Node {
     return memory.append(new Node(this.level, ...arr));
   }
 
+  swap(x, y, memory) {
+    const arr = DIVISION.map(x => this[x]);
+    const id = DIVISION.indexOf(this.getSubNode(x, y));
+
+    x %= this.core;
+    y %= this.core;
+    arr[id] = arr[id].swap(x, y, memory);
+    
+    return memory.append(new Node(this.level, ...arr));
+  }
+
   get id() {
     return this.__id;
   }
@@ -81,6 +92,12 @@ class Leaf {
   set(x, y, value, memory) {
     const newData = [...this.data];
     newData[y * this.width + x] = value;
+    return memory.append(new Leaf(this.level, newData));
+  }
+
+  swap(x, y, memory) {
+    const newData = [...this.data];
+    newData[y * this.width + x] = 1 - newData[y * this.width + x];
     return memory.append(new Leaf(this.level, newData));
   }
 
@@ -165,6 +182,11 @@ class QuadTree {
   set(x, y, value) {
     // assuming we have field for (x,y)
     this.root = this.root.set(x, y, value, this.memory);
+  }
+
+  swap(x, y) {
+    // assuming we have field for (x,y)
+    this.root = this.root.swap(x, y, this.memory);
   }
 
   expandToWidth(width) {

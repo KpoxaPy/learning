@@ -22,8 +22,7 @@ class GoL_Toroidal2d {
   }
 
   swapCell(x, y) {
-    const state = this.field.get(x, y);
-    this.field.set(x, y, 1 - state);
+    this.field.swap(x, y);
     console.log(this.field);
   }
 
