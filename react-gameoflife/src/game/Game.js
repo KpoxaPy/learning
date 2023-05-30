@@ -18,27 +18,31 @@ const GameOnCanvas = ({
   const [randomLevel, setRandomLevel] = useState(DEFAULT_RANDOM_THRESHOLD);
   const [canvasAddClass, setCanvasAddClass] = useState("board_editable");
 
-  const s = useRef({
-    width: undefined,
-    height: undefined,
-
-    game: new GameOfLife(new Toroid2d(100, 100)),
-    image: null,
-    time: 0,
-    redraw: false,
-
-    viewport: {
-      x: 0,
-      y: 0,
-      zoom: 1,
-    },
-
-    mouse: {
-      x: undefined,
-      y: undefined,
-      isDown: false,
-    },
-  }).current;
+  const mainStateRef = useRef(undefined);
+  if (!mainStateRef.current) {
+    mainStateRef.current = {
+      width: undefined,
+      height: undefined,
+  
+      game: new GameOfLife(new Toroid2d(100, 100)),
+      image: undefined,
+      time: 0,
+      redraw: false,
+  
+      viewport: {
+        x: 0,
+        y: 0,
+        zoom: 1,
+      },
+  
+      mouse: {
+        x: undefined,
+        y: undefined,
+        isDown: false,
+      },
+    };
+  }
+  const s = mainStateRef.current;
 
   const canvas = useRef(null);
   const infoZoomLevel = useRef(null);
