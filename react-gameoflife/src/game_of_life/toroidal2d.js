@@ -15,17 +15,17 @@ class GoL_Toroidal2d {
         this.field.set(x, y, Math.random() <= threshold ? 1 : 0);
       }
     }
-    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes; cache has ${this.field.memory.cache.size} entries`);
   }
 
   clear() {
     this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory, true);
-    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes; cache has ${this.field.memory.cache.size} entries`);
   }
 
   swapCell(x, y) {
     this.field.swap(x, y);
-    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes; cache has ${this.field.memory.cache.size} entries`);
   }
 
   get(x, y) {
@@ -34,7 +34,7 @@ class GoL_Toroidal2d {
 
   runIteration() {
     this.field.iterate();
-    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes; cache has ${this.field.memory.cache.size} entries`);
   }
 }
 
