@@ -121,15 +121,15 @@ class Node extends QuadTreeBaseNode {
       return this.iterateSelf(rules);
     }
 
-    const neRes = this.ne.iterate(rules);
-    const eRes = this.e.iterate(rules);
-    const seRes = this.se.iterate(rules);
-    const sRes = this.s.iterate(rules);
-    const swRes = this.sw.iterate(rules);
-    const wRes = this.w.iterate(rules);
-    const nwRes = this.nw.iterate(rules);
-    const nRes = this.n.iterate(rules);
-    const cRes = this.center.iterate(rules);
+    const neRes = this.mem.iter(this.ne);
+    const eRes = this.mem.iter(this.e);
+    const seRes = this.mem.iter(this.se);
+    const sRes = this.mem.iter(this.s);
+    const swRes = this.mem.iter(this.sw);
+    const wRes = this.mem.iter(this.w);
+    const nwRes = this.mem.iter(this.nw);
+    const nRes = this.mem.iter(this.n);
+    const cRes = this.mem.iter(this.center);
 
     const neAux = this.mem.node(neRes, eRes, cRes, nRes);
     const seAux = this.mem.node(eRes, seRes, sRes, cRes);
