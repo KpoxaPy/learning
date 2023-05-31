@@ -7,7 +7,6 @@ class GoL_Toroidal2d {
 
     this.memory = new QuadTree.Memory();
     this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory, true);
-    console.log(this.field);
   }
 
   random(threshold) {
@@ -16,17 +15,17 @@ class GoL_Toroidal2d {
         this.field.set(x, y, Math.random() <= threshold ? 1 : 0);
       }
     }
-    console.log(this.field);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
   }
 
   clear() {
     this.field = new QuadTree(Math.max(this.rows, this.cols), this.memory, true);
-    console.log(this.field);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
   }
 
   swapCell(x, y) {
     this.field.swap(x, y);
-    console.log(this.field);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
   }
 
   get(x, y) {
@@ -35,7 +34,7 @@ class GoL_Toroidal2d {
 
   runIteration(rules) {
     this.field.iterate(rules);
-    console.log(this.field);
+    console.log(`Memory: table has ${this.field.memory.index.size} nodes`);
   }
 }
 
