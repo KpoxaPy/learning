@@ -360,3 +360,29 @@ describe("with canon 1 level", () => {
     });
   });
 });
+
+describe("several appends", () => {
+  const memory = new QuadTreeMemory();
+
+  const appendArgs = [0, [1]];
+  const appendResult = expect.objectContaining({
+    __hash: "<1>",
+    __id: 0,
+    __isEmpty: false,
+    data: [1],
+    level: 0,
+    width: 1
+  });
+  let objectRet = null;
+  
+  test("first append", () => {
+    objectRet = memory.leafFunctor(...appendArgs);
+    expect(objectRet).toEqual(appendResult);
+  });
+  
+  test("second append", () => {
+    const objectRetHere = memory.leafFunctor(...appendArgs);
+    expect(objectRetHere).toEqual(appendResult);
+    expect(objectRetHere).toBe(objectRet);
+  });
+});
