@@ -2,9 +2,9 @@ import QuadTreeBaseNode from "./QuadTreeBaseNode";
 
 
 class Leaf extends QuadTreeBaseNode {
-  constructor(m, level, data) {
+  constructor(mem, level, data) {
     super(level);
-    this.m = m;
+    this.mem = mem;
     this.data = data;
   }
 
@@ -19,13 +19,13 @@ class Leaf extends QuadTreeBaseNode {
   set(x, y, value) {
     const newData = [...this.data];
     newData[y * this.width + x] = value;
-    return this.m(this.level, newData);
+    return this.mem.leaf(this.level, newData);
   }
 
   swap(x, y) {
     const newData = [...this.data];
     newData[y * this.width + x] = 1 - newData[y * this.width + x];
-    return this.m(this.level, newData);
+    return this.mem.leaf(this.level, newData);
   }
 
   get ne() {
@@ -70,11 +70,11 @@ class Leaf extends QuadTreeBaseNode {
 
   get double() {
     const empty = new Array(Math.pow(2, this.level - 1)).fill(0);
-    return this.m.memory.nodeFunctor(
-      this.m(this.level, [...this.ne, ...empty, ...empty, ...empty]),
-      this.m(this.level, [...empty, ...empty, ...this.se, ...empty]),
-      this.m(this.level, [...empty, ...empty, ...empty, ...this.sw]),
-      this.m(this.level, [...empty, ...this.nw, ...empty, ...empty]));
+    return this.mem.node(
+      this.mem.leaf(this.level, [...this.ne, ...empty, ...empty, ...empty]),
+      this.mem.leaf(this.level, [...empty, ...empty, ...this.se, ...empty]),
+      this.mem.leaf(this.level, [...empty, ...empty, ...empty, ...this.sw]),
+      this.mem.leaf(this.level, [...empty, ...this.nw, ...empty, ...empty]));
   }
 }
 

@@ -5,12 +5,11 @@ const DEFAULT_RANDOM_THRESHOLD = 0.33;
 class GameOfLife {
   constructor(topology, rules) {
     this.topology = topology;
-    this.rules = rules;
     this.impl = null;
 
     if (this.topology.name === "toroid2d") {
       const { width: cols, height: rows } = this.topology.boundRect;
-      this.impl = new GoL_Toroidal2d(rows, cols);
+      this.impl = new GoL_Toroidal2d(rules, rows, cols);
     } else {
       throw Error(`not supported GoL topology: ${this.topology.name}`);
     }
@@ -35,7 +34,7 @@ class GameOfLife {
   }
 
   runIteration() {
-    this.impl.runIteration(this.rules);
+    this.impl.runIteration();
   }
 }
 

@@ -8,7 +8,7 @@ const NW = "nw";
 const DIVISION = [NE, SE, SW, NW];
 
 class Node extends QuadTreeBaseNode {
-  constructor(m, ne, se, sw, nw) {
+  constructor(mem, ne, se, sw, nw) {
     const level = ne.level;
     if (!Number.isSafeInteger(level)) {
       throw Error("Node should be made of valid subnodes");
@@ -19,7 +19,7 @@ class Node extends QuadTreeBaseNode {
 
     super(level + 1);
 
-    this.m = m;
+    this.mem = mem;
 
     this.ne = ne;
     this.se = se;
@@ -60,7 +60,7 @@ class Node extends QuadTreeBaseNode {
     y %= this.core;
     arr[id] = arr[id].set(x, y, value);
 
-    return this.m(...arr);
+    return this.mem.node(...arr);
   }
 
   swap(x, y) {
@@ -71,44 +71,44 @@ class Node extends QuadTreeBaseNode {
     y %= this.core;
     arr[id] = arr[id].swap(x, y);
 
-    return this.m(...arr);
+    return this.mem.node(...arr);
   }
 
   get double() {
-    const empty = this.m.memory.getEmpty(this.level - 1);
-    return this.m(this.m(empty, empty, this.ne, empty),
-      this.m(empty, empty, empty, this.se),
-      this.m(this.sw, empty, empty, empty),
-      this.m(empty, this.nw, empty, empty))
+    const empty = this.mem.getEmpty(this.level - 1);
+    return this.mem.node(this.mem.node(empty, empty, this.ne, empty),
+      this.mem.node(empty, empty, empty, this.se),
+      this.mem.node(this.sw, empty, empty, empty),
+      this.mem.node(empty, this.nw, empty, empty))
   }
 
   get toroidalDouble() {
-    const sub = this.m(this.sw, this.nw, this.ne, this.se);
-    return this.m(sub, sub, sub, sub);
+    const sub = this.mem.node(this.sw, this.nw, this.ne, this.se);
+    return this.mem.node(sub, sub, sub, sub);
   }
 
   get n() {
-    return this.m(this.ne.nw, this.ne.sw, this.nw.se, this.nw.ne);
+    return this.mem.node(this.ne.nw, this.ne.sw, this.nw.se, this.nw.ne);
   }
 
   get e() {
-    return this.m(this.ne.se, this.se.ne, this.se.nw, this.ne.sw);
+    return this.mem.node(this.ne.se, this.se.ne, this.se.nw, this.ne.sw);
   }
 
   get s() {
-    return this.m(this.se.nw, this.se.sw, this.sw.se, this.sw.ne);
+    return this.mem.node(this.se.nw, this.se.sw, this.sw.se, this.sw.ne);
   }
 
   get w() {
-    return this.m(this.nw.se, this.sw.ne, this.sw.nw, this.nw.sw);
+    return this.mem.node(this.nw.se, this.sw.ne, this.sw.nw, this.nw.sw);
   }
 
   get center() {
     if (this.level > 2) {
-      return this.m(this.ne.sw, this.se.nw, this.sw.ne, this.nw.se);
+      return this.mem.node(this.ne.sw, this.se.nw, this.sw.ne, this.nw.se);
     }
 
-    return this.m.memory.leafFunctor(this.level - 1, [
+    return this.mem.leaf(this.level - 1, [
       ...this.sw.ne,
       ...this.se.nw,
       ...this.nw.se,
@@ -131,18 +131,18 @@ class Node extends QuadTreeBaseNode {
     const nRes = this.n.iterate(rules);
     const cRes = this.center.iterate(rules);
 
-    const neAux = this.m(neRes, eRes, cRes, nRes);
-    const seAux = this.m(eRes, seRes, sRes, cRes);
-    const swAux = this.m(cRes, sRes, swRes, wRes);
-    const nwAux = this.m(nRes, cRes, wRes, nwRes);
+    const neAux = this.mem.node(neRes, eRes, cRes, nRes);
+    const seAux = this.mem.node(eRes, seRes, sRes, cRes);
+    const swAux = this.mem.node(cRes, sRes, swRes, wRes);
+    const nwAux = this.mem.node(nRes, cRes, wRes, nwRes);
 
-    return this.m(neAux.center, seAux.center, swAux.center, nwAux.center);
+    return this.mem.node(neAux.center, seAux.center, swAux.center, nwAux.center);
   }
 
   iterateSelf(rules) {
     const left = this.core / 2;
     const right = this.width - left;
-    let result = this.m.memory.getEmpty(this.level - 1);
+    let result = this.mem.getEmpty(this.level - 1);
     for (let x = left; x < right; ++x) {
       for (let y = left; y < right; ++y) {
         result = result.set(x - left, y - left,

@@ -10,7 +10,6 @@ class QuadTree {
     } else {
       this.memory = new QuadTreeMemory();
     }
-    this.m = this.memory.nodeFunctor;
     this.memory.canonizeLeafs(QuadTree.MINIMUM_LEVEL);
 
     const minimumWidth = Math.pow(2, QuadTree.MINIMUM_LEVEL);
@@ -28,12 +27,12 @@ class QuadTree {
 
   set(x, y, value) {
     // assuming we have field for (x,y)
-    this.root = this.root.set(x, y, value, this.m);
+    this.root = this.root.set(x, y, value);
   }
 
   swap(x, y) {
     // assuming we have field for (x,y)
-    this.root = this.root.swap(x, y, this.m);
+    this.root = this.root.swap(x, y);
   }
 
   expandToWidth(width) {
@@ -47,17 +46,17 @@ class QuadTree {
 
   expand() {
     if (!this.root) {
-      this.root = this.memory.empty.get(QuadTree.MINIMUM_LEVEL);
+      this.root = this.memory.getEmpty(QuadTree.MINIMUM_LEVEL);
     } else {
       this.root = this.root.double;
     }
   }
 
-  iterate(rules) {
+  iterate() {
     const double = this.isToroidal ?
       this.root.toroidalDouble :
       this.root.double;
-    this.root = double.iterate(rules);
+      this.root = double.iterate(this.memory.rules);
   }
 }
 

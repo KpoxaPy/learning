@@ -376,12 +376,12 @@ describe("several appends", () => {
   let objectRet = null;
   
   test("first append", () => {
-    objectRet = memory.leafFunctor(...appendArgs);
+    objectRet = memory.leaf(...appendArgs);
     expect(objectRet).toEqual(appendResult);
   });
   
   test("second append", () => {
-    const objectRetHere = memory.leafFunctor(...appendArgs);
+    const objectRetHere = memory.leaf(...appendArgs);
     expect(objectRetHere).toEqual(appendResult);
     expect(objectRetHere).toBe(objectRet);
   });

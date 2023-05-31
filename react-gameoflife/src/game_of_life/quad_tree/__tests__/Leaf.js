@@ -5,7 +5,7 @@ const memory = new QuadTreeMemory();
 
 describe("Spatial information", () => {
   test("immutable 0 level", () => {
-    const node = memory.leafFunctor(0, [0]);
+    const node = memory.leaf(0, [0]);
     expect(node.get(0, 0)).toBe(0);
     expect(node.data).toStrictEqual([0]);
     node.set(0, 0, 1);
@@ -14,7 +14,7 @@ describe("Spatial information", () => {
   });
 
   test("immutable 1 level", () => {
-    const node = memory.leafFunctor(1, [0, 0, 0, 0]);
+    const node = memory.leaf(1, [0, 0, 0, 0]);
     expect(node.get(0, 0)).toBe(0);
     expect(node.data).toStrictEqual([0, 0, 0, 0]);
     node.set(0, 0, 1);
@@ -27,7 +27,7 @@ describe("Spatial information", () => {
 
 
   test("0 level", () => {
-    let node = memory.leafFunctor(0, [0]);
+    let node = memory.leaf(0, [0]);
     const e = (n) => extract(n, 0, 1, 0, 1);
 
     expect(e(node)).toStrictEqual([[0]]);
@@ -40,7 +40,7 @@ describe("Spatial information", () => {
   });
 
   test("1 level", () => {
-    let node = memory.leafFunctor(1, [0, 0, 0, 0]);
+    let node = memory.leaf(1, [0, 0, 0, 0]);
     const e = (n) => extract(n, 0, 2, 0, 2);
 
     expect(e(node)).toStrictEqual([[0, 0], [0, 0]]);
@@ -62,7 +62,7 @@ describe("Spatial information", () => {
 
   describe("1 level quadrants", () => {
     describe("pattern1", () => {
-      let node = memory.leafFunctor(1, [0, 1, 1, 0]);
+      let node = memory.leaf(1, [0, 1, 1, 0]);
       const e = (n) => extract(n, 0, 2, 0, 2);
 
       expect(e(node)).toStrictEqual([
@@ -88,7 +88,7 @@ describe("Spatial information", () => {
       ]);
     });
     describe("pattern2", () => {
-      let node = memory.leafFunctor(1, [1, 0, 0, 1]);
+      let node = memory.leaf(1, [1, 0, 0, 1]);
       const e = (n) => extract(n, 0, 2, 0, 2);
 
       expect(e(node)).toStrictEqual([
@@ -117,7 +117,7 @@ describe("Spatial information", () => {
 
   describe("1 level double", () => {
     test("pattern1", () => {
-      let node = memory.leafFunctor(1, [0, 1, 1, 0]);
+      let node = memory.leaf(1, [0, 1, 1, 0]);
       const e = (n) => extract(n, 0, 2, 0, 2);
       const eAdd = (n) => extract(n, 0, 4, 0, 4);
 
@@ -141,7 +141,7 @@ describe("Spatial information", () => {
   });
 
   test("pattern2", () => {
-    let node = memory.leafFunctor(1, [1, 0, 0, 1]);
+    let node = memory.leaf(1, [1, 0, 0, 1]);
     const e = (n) => extract(n, 0, 2, 0, 2);
     const eAdd = (n) => extract(n, 0, 4, 0, 4);
 
