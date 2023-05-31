@@ -109,10 +109,10 @@ class Node extends QuadTreeBaseNode {
     }
 
     return this.m.memory.leafFunctor(this.level - 1, [
-      ...this.ne.sw,
-      ...this.se.nw,
       ...this.sw.ne,
-      ...this.nw.se
+      ...this.se.nw,
+      ...this.nw.se,
+      ...this.ne.sw
     ]);
   }
 
