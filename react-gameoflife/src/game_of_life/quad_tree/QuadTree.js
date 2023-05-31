@@ -56,7 +56,7 @@ class QuadTree {
     const double = this.isToroidal ?
       this.root.toroidalDouble :
       this.root.double;
-      this.root = double.iterate(this.memory.rules);
+      this.root = this.memory.iter(double);
   }
 }
 

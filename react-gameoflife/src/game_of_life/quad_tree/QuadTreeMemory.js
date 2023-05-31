@@ -8,6 +8,13 @@ class QuadTreeMemory {
     this.empty = new Map();
     this.index = new Map();
     this.table = new Map();
+    this.cache = new Map();
+
+
+    this.iter = (node) => {
+      return this.cachedIteration(node);
+    }
+
     this.node = (...args) => {
       return this.append(new Node(this, ...args));
     };
@@ -26,6 +33,16 @@ class QuadTreeMemory {
     }
     return this.table.get(node.hash);
   }
+
+  cachedIteration(node) {
+    if (!this.cache.has(node.hash)) {
+      const iteratedNode = node.iterate(this.rules);
+      this.cache.set(node.hash, iteratedNode);
+      return iteratedNode;
+    }
+    return this.cache.get(node.hash);
+  }
+
   
   canonizeLeafs(level) {
     const base = 2;
