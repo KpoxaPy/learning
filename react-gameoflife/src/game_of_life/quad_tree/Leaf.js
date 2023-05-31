@@ -71,9 +71,9 @@ class Leaf extends QuadTreeBaseNode {
   get double() {
     const empty = new Array(Math.pow(2, this.level - 1)).fill(0);
     return this.m.memory.nodeFunctor(
-      this.m(this.level, [...empty, ...empty, ...this.ne, ...empty]),
-      this.m(this.level, [...empty, ...empty, ...empty, ...this.se]),
-      this.m(this.level, [...this.sw, ...empty, ...empty, ...empty]),
+      this.m(this.level, [...this.ne, ...empty, ...empty, ...empty]),
+      this.m(this.level, [...empty, ...empty, ...this.se, ...empty]),
+      this.m(this.level, [...empty, ...empty, ...empty, ...this.sw]),
       this.m(this.level, [...empty, ...this.nw, ...empty, ...empty]));
   }
 }
