@@ -21,16 +21,26 @@ class QuadTree {
   }
 
   get(x, y) {
+    if (this.isToroidal) {
+      x = (x % this.root.width + this.root.width) % this.root.width
+      y = (y % this.root.width + this.root.width) % this.root.width;
+    }
     // assuming we have field for (x,y)
     return this.root.get(x, y);
   }
 
   set(x, y, value) {
+    if (this.isToroidal) {
+      
+    }
     // assuming we have field for (x,y)
     this.root = this.root.set(x, y, value);
   }
 
   swap(x, y) {
+    if (this.isToroidal) {
+      
+    }
     // assuming we have field for (x,y)
     this.root = this.root.swap(x, y);
   }

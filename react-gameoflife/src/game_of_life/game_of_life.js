@@ -29,7 +29,7 @@ class GameOfLife {
   }
 
   get(x, y) {
-    return this.impl.get(Math.floor(this.topology.transformX(x)), Math.floor(this.topology.transformY(y)));
+    return this.impl.get(Math.floor(x), Math.floor(y));
   }
 
   runIteration() {
