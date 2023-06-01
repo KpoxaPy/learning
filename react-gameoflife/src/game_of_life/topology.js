@@ -3,11 +3,12 @@ class Base {
         this.parentTopology = parentTopology;
     }
 
-    transform(...coords) {
-        if (this.parentTopology) {
-            return this.parentTopology.transform(...coords);
-        }
-        return coords;
+    transformX(x) {
+        return undefined;
+    }
+
+    transformY(y) {
+        return undefined;
     }
 
     get isBounded() {
@@ -24,10 +25,6 @@ class Base {
 }
 
 class Euqlid extends Base {
-    transform(...coords) {
-        return super.transform(...coords);
-    }
-
     get name() {
         return "euqlid";
     }
@@ -40,13 +37,12 @@ class Toroid2d extends Base {
         this.height = height;
     }
 
-    transform(x, y) {
-        const [rX, rY] = super.transform(x, y);
+    transformX(x) {
+        return (x % this.width + this.width) % this.width;
+    }
 
-        return [
-            (rX % this.width + this.width) % this.width,
-            (rY % this.height + this.height) % this.height
-        ];
+    transformY(y) {
+        return (y % this.height + this.height) % this.height;
     }
 
     get isBounded() {

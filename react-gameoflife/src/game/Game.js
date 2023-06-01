@@ -52,9 +52,12 @@ const GameOnCanvas = ({
     const shiftX = s.viewport.x - s.width / 2 * ratio;
     const shiftY = s.viewport.y - s.height / 2 * ratio;
 
-    return (x, y) => {
+    const o = (x, y) => {
       return [x * ratio + shiftX, y * ratio + shiftY];
-    }
+    };
+    o.delta = ratio;
+
+    return o;
   };
 
   // cx and cy in screen coordinates
@@ -145,10 +148,16 @@ const GameOnCanvas = ({
   const drawPixels = (ctx) => {
     const pixels = s.image.data;
     const transform = getTransformPixelToCell();
+    const [gameStartX, gameStartY] = transform(0, 0);
+    let gameX = gameStartX;
+    let gameY = undefined;
     for (let x = 0; x < s.width; ++x) {
+      gameX += transform.delta;
+      gameY = gameStartY;
       for (let y = 0; y < s.height; ++y) {
+        gameY += transform.delta;
         const offset = (y * s.width + x) * 4;
-        const state = s.game.get(...transform(x, y));
+        const state = s.game.get(gameX, gameY);
         if (state) {
           pixels[offset] = 200;
           pixels[offset + 1] = 200;
