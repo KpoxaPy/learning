@@ -4,14 +4,13 @@ const DEFAULT_RANDOM_THRESHOLD = 0.33;
 
 class GameOfLife {
   constructor(topology, rules) {
-    this.topology = topology;
     this.impl = null;
 
-    if (this.topology.name === "toroid2d") {
-      const { width: cols, height: rows } = this.topology.boundRect;
+    if (topology.name === "toroid2d") {
+      const { width: cols, height: rows } = topology.boundRect;
       this.impl = new GoL_Toroidal2d(rules, rows, cols);
     } else {
-      throw Error(`not supported GoL topology: ${this.topology.name}`);
+      throw Error(`not supported GoL topology: ${topology.name}`);
     }
   }
 
@@ -24,8 +23,7 @@ class GameOfLife {
   }
 
   swapCell(x, y) {
-    let [tX, tY] = this.topology.transform(x, y);
-    this.impl.swapCell(Math.floor(tX), Math.floor(tY));
+    this.impl.swapCell(Math.floor(x), Math.floor(y));
   }
 
   get(x, y) {

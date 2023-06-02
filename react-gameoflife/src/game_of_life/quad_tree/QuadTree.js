@@ -18,30 +18,32 @@ class QuadTree {
     this.expandToWidth(targetWidth);
 
     this.isToroidal = isToroidal;
+
+    if (this.isToroidal) {
+      this.get = this.getToroidal;
+      this.set = this.setToroidal;
+      this.swap = this.swapToroidal;
+    }
   }
 
-  get(x, y) {
-    if (this.isToroidal) {
-      x = (x % this.root.width + this.root.width) % this.root.width
-      y = (y % this.root.width + this.root.width) % this.root.width;
-    }
-    // assuming we have field for (x,y)
+  getToroidal(x, y) {
+    const width = this.root.width;
+    x = (x % width + width) % width;
+    y = (y % width + width) % width;
     return this.root.get(x, y);
   }
 
-  set(x, y, value) {
-    if (this.isToroidal) {
-      
-    }
-    // assuming we have field for (x,y)
+  setToroidal(x, y, value) {
+    const width = this.root.width;
+    x = (x % width + width) % width;
+    y = (y % width + width) % width;
     this.root = this.root.set(x, y, value);
   }
 
-  swap(x, y) {
-    if (this.isToroidal) {
-      
-    }
-    // assuming we have field for (x,y)
+  swapToroidal(x, y) {
+    const width = this.root.width;
+    x = (x % width + width) % width;
+    y = (y % width + width) % width;
     this.root = this.root.swap(x, y);
   }
 

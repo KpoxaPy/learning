@@ -6,6 +6,7 @@ const SE = "se";
 const SW = "sw";
 const NW = "nw";
 const DIVISION = [NE, SE, SW, NW];
+const MAPPING = [SW, SE, NW, NE];
 
 class Node extends QuadTreeBaseNode {
   constructor(mem, ne, se, sw, nw) {
@@ -21,6 +22,8 @@ class Node extends QuadTreeBaseNode {
 
     this.mem = mem;
 
+    this.coreMask = this.core - 1;
+    this.coreLevel = this.level - 1;
     this.ne = ne;
     this.se = se;
     this.sw = sw;
@@ -32,33 +35,20 @@ class Node extends QuadTreeBaseNode {
   }
 
   getSubNode(x, y) {
-    if (x >= this.core) {
-      if (y >= this.core) {
-        return NE;
-      } else {
-        return SE;
-      }
-    } else if (y >= this.core) {
-      return NW;
-    } else {
-      return SW;
-    }
+    x >>= this.coreLevel;
+    y >>= this.coreLevel;
+    return MAPPING[2 * y + x];
   }
 
   get(x, y) {
-    const subNodeId = this.getSubNode(x, y);
-    x %= this.core;
-    y %= this.core;
-    return this[subNodeId].get(x, y);
+    return this[this.getSubNode(x, y)].get(x & this.coreMask, y & this.coreMask);
   }
 
   set(x, y, value) {
     const arr = DIVISION.map(x => this[x]);
     const id = DIVISION.indexOf(this.getSubNode(x, y));
 
-    x %= this.core;
-    y %= this.core;
-    arr[id] = arr[id].set(x, y, value);
+    arr[id] = arr[id].set(x & this.coreMask, y & this.coreMask, value);
 
     return this.mem.node(...arr);
   }
@@ -67,9 +57,7 @@ class Node extends QuadTreeBaseNode {
     const arr = DIVISION.map(x => this[x]);
     const id = DIVISION.indexOf(this.getSubNode(x, y));
 
-    x %= this.core;
-    y %= this.core;
-    arr[id] = arr[id].swap(x, y);
+    arr[id] = arr[id].swap(x & this.coreMask, y & this.coreMask);
 
     return this.mem.node(...arr);
   }
