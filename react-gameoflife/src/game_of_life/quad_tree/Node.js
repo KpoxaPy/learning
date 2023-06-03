@@ -35,9 +35,7 @@ class Node extends QuadTreeBaseNode {
   }
 
   getSubNode(x, y) {
-    x >>= this.coreLevel;
-    y >>= this.coreLevel;
-    return MAPPING[2 * y + x];
+    return MAPPING[((y >> this.coreLevel) << 1) + (x >> this.coreLevel)];
   }
 
   get(x, y) {
@@ -64,10 +62,11 @@ class Node extends QuadTreeBaseNode {
 
   get double() {
     const empty = this.mem.getEmpty(this.level - 1);
-    return this.mem.node(this.mem.node(empty, empty, this.ne, empty),
+    return this.mem.node(
+      this.mem.node(empty, empty, this.ne, empty),
       this.mem.node(empty, empty, empty, this.se),
       this.mem.node(this.sw, empty, empty, empty),
-      this.mem.node(empty, this.nw, empty, empty))
+      this.mem.node(empty, this.nw, empty, empty));
   }
 
   get toroidalDouble() {
